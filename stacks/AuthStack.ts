@@ -1,0 +1,45 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="../.sst/platform/config.d.ts" />
+
+export default function AuthStack() {
+  const authTable = new sst.aws.Dynamo("AuthDb", {
+    fields: {
+      pk: "string",
+      sk: "string",
+    },
+    ttl: "expiry",
+    primaryIndex: {
+      hashKey: "pk",
+      rangeKey: "sk",
+    },
+  });
+
+  const authEmail = new sst.aws.Email("AuthEmail", {
+    sender: $app.stage === "prod" ? "yazr.ai" : "noreply+dev2@yazr.ai",
+    dmarc:
+      $app.stage === "prod"
+        ? "v=DMARC1; p=quarantine; adkim=s; aspf=s;"
+        : undefined,
+    dns: $app.stage === "prod" ? sst.cloudflare.dns() : undefined,
+  });
+  const auth = new sst.aws.Auth("Auth", {
+    // authorizer: {
+    //   handler: "backend/auth/authorizer.handler",
+    //   link: [authTable, authEmail],
+    // },
+    issuer: {
+      handler: "backend/auth/authorizer.handler",
+      link: [authTable, authEmail],
+    },
+    domain:
+      $app.stage === "prod"
+        ? {
+            name: "auth.yazr.ai",
+            dns: sst.cloudflare.dns(),
+          }
+        : undefined,
+  });
+  return {
+    auth,
+  };
+}

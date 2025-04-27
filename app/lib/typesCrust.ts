@@ -1,0 +1,410 @@
+import { z } from "zod";
+
+const domainResponseSchema = z.object({
+  domain: z.string(),
+  createdAt: z.string(),
+  company_id: z.number(),
+  company_name: z.string(),
+  linkedin_profile_url: z.string().url(),
+  crunchbase_profile_url: z.string().url(),
+  linkedin_id: z.string(),
+  linkedin_logo_url: z.string().url(),
+  company_twitter_url: z.string().url(),
+  company_website_domain: z.string(),
+  hq_country: z.string(),
+  headquarters: z.string(),
+  largest_headcount_country: z.string(),
+  hq_street_address: z.string(),
+  company_website: z.string().url(),
+  year_founded: z.string(),
+  fiscal_year_end: z.string(),
+  estimated_revenue_lower_bound_usd: z.number(),
+  estimated_revenue_higher_bound_usd: z.number(),
+  employee_count_range: z.string(),
+  company_type: z.string(),
+  linkedin_company_description: z.string(),
+  acquisition_status: z.string().nullable(),
+  markets: z.array(z.string()),
+  stock_symbols: z.array(z.string()),
+  ceo_location: z.string(),
+  all_office_addresses: z.null(),
+  taxonomy: z.object({
+    linkedin_specialities: z.array(z.string()),
+    linkedin_industries: z.array(z.string()),
+    crunchbase_categories: z.array(z.string()),
+  }),
+  competitors: z.object({
+    competitor_website_domains: z.null(),
+    paid_seo_competitors_website_domains: z.array(z.string()),
+    organic_seo_competitors_website_domains: z.array(z.string()),
+  }),
+  headcount: z.object({
+    linkedin_headcount: z.number(),
+    linkedin_headcount_total_growth_percent: z.object({
+      mom: z.number(),
+      qoq: z.number(),
+      six_months: z.number(),
+      yoy: z.number(),
+      two_years: z.number(),
+    }),
+    linkedin_headcount_total_growth_absolute: z.object({
+      mom: z.number(),
+      qoq: z.number(),
+      six_months: z.number(),
+      yoy: z.number(),
+      two_years: z.number(),
+    }),
+    linkedin_headcount_by_role_absolute: z.record(z.number()),
+    linkedin_headcount_by_role_percent: z.record(z.number()),
+    linkedin_role_metrics: z.object({
+      all_roles: z.string(),
+      "0_to_10_percent": z.string(),
+      "11_to_30_percent": z.string(),
+      "31_to_50_percent": z.string(),
+      "51_to_70_percent": z.null(),
+      "71_to_100_percent": z.null(),
+    }),
+    linkedin_headcount_by_role_six_months_growth_percent: z.object({
+      engineering: z.number(),
+      sales: z.number(),
+      operations: z.number(),
+      human_resource: z.number(),
+      quality_assurance: z.number(),
+    }),
+    linkedin_headcount_by_role_yoy_growth_percent: z.object({
+      engineering: z.number(),
+      sales: z.number(),
+      operations: z.number(),
+      human_resource: z.number(),
+      quality_assurance: z.number(),
+    }),
+    linkedin_headcount_by_region_absolute: z.record(z.number()),
+    linkedin_headcount_by_region_percent: z.record(z.number()),
+    linkedin_region_metrics: z.object({
+      all_regions: z.string(),
+      "0_to_10_percent": z.string(),
+      "11_to_30_percent": z.string(),
+      "31_to_50_percent": z.null(),
+      "51_to_70_percent": z.string(),
+      "71_to_100_percent": z.null(),
+    }),
+    linkedin_headcount_by_skill_absolute: z.record(z.number()),
+    linkedin_headcount_by_skill_percent: z.record(z.number()),
+    linkedin_skill_metrics: z.object({
+      all_skills: z.string(),
+      "0_to_10_percent": z.string(),
+      "11_to_30_percent": z.string(),
+      "31_to_50_percent": z.null(),
+      "51_to_70_percent": z.null(),
+      "71_to_100_percent": z.null(),
+    }),
+    linkedin_headcount_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        employee_count: z.number(),
+      }),
+    ),
+    linkedin_headcount_by_function_timeseries: z.object({
+      CURRENT_FUNCTION: z.record(
+        z.array(
+          z.object({
+            date: z.string(),
+            employee_count: z.number(),
+          }),
+        ),
+      ),
+      GEO_REGION: z.record(
+        z.array(
+          z.object({
+            date: z.string(),
+            employee_count: z.number(),
+          }),
+        ),
+      ),
+    }),
+  }),
+  web_traffic: z.object({
+    monthly_visitors: z.number(),
+    monthly_visitor_mom_pct: z.number(),
+    monthly_visitor_qoq_pct: z.number(),
+    traffic_source_social_pct: z.number(),
+    traffic_source_search_pct: z.number(),
+    traffic_source_direct_pct: z.number(),
+    traffic_source_paid_referral_pct: z.number(),
+    traffic_source_referral_pct: z.number(),
+    monthly_visitors_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        monthly_visitors: z.number(),
+      }),
+    ),
+    traffic_source_social_pct_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        traffic_source_social_pct: z.number(),
+      }),
+    ),
+    traffic_source_search_pct_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        traffic_source_search_pct: z.number(),
+      }),
+    ),
+    traffic_source_direct_pct_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        traffic_source_direct_pct: z.number(),
+      }),
+    ),
+    traffic_source_paid_referral_pct_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        traffic_source_paid_referral_pct: z.number(),
+      }),
+    ),
+    traffic_source_referral_pct_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        traffic_source_referral_pct: z.number(),
+      }),
+    ),
+  }),
+  glassdoor: z.object({
+    glassdoor_overall_rating: z.number(),
+    glassdoor_ceo_approval_pct: z.number(),
+    glassdoor_business_outlook_pct: z.number(),
+    glassdoor_review_count: z.number(),
+    glassdoor_senior_management_rating: z.number(),
+    glassdoor_compensation_rating: z.number(),
+    glassdoor_career_opportunities_rating: z.number(),
+    glassdoor_culture_rating: z.null(),
+    glassdoor_diversity_rating: z.null(),
+    glassdoor_work_life_balance_rating: z.null(),
+    glassdoor_recommend_to_friend_pct: z.null(),
+    glassdoor_ceo_approval_growth_percent: z.object({
+      mom: z.number(),
+      qoq: z.number(),
+      yoy: z.number(),
+    }),
+    glassdoor_review_count_growth_percent: z.object({
+      mom: z.number(),
+      qoq: z.number(),
+      yoy: z.number(),
+    }),
+  }),
+  g2: z.object({
+    g2_review_count: z.null(),
+    g2_average_rating: z.null(),
+    g2_review_count_mom_pct: z.null(),
+    g2_review_count_qoq_pct: z.null(),
+    g2_review_count_yoy_pct: z.null(),
+  }),
+  linkedin_followers: z.object({
+    linkedin_followers: z.number(),
+    linkedin_follower_count_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        follower_count: z.number(),
+      }),
+    ),
+    linkedin_followers_mom_percent: z.number(),
+    linkedin_followers_qoq_percent: z.number(),
+    linkedin_followers_six_months_growth_percent: z.number(),
+    linkedin_followers_yoy_percent: z.number(),
+  }),
+  funding_and_investment: z.object({
+    crunchbase_total_investment_usd: z.number(),
+    days_since_last_fundraise: z.number(),
+    last_funding_round_type: z.string(),
+    crunchbase_investors_info_list: z.array(
+      z.object({
+        name: z.string(),
+        uuid: z.string(),
+        type: z.string(),
+      }),
+    ),
+    crunchbase_investors: z.array(z.string()),
+    last_funding_round_investment_usd: z.number(),
+    funding_milestones_timeseries: z.array(
+      z.object({
+        funding_milestone_amount_usd: z.number().nullable(),
+        funding_round: z.string(),
+        funding_milestone_investors: z.string(),
+        date: z.string(),
+      }),
+    ),
+  }),
+  job_openings: z.object({
+    recent_job_openings_title: z.string(),
+    job_openings_count: z.number(),
+    job_openings_count_growth_percent: z.object({
+      mom: z.number(),
+      qoq: z.number(),
+      yoy: z.null(),
+    }),
+    job_openings_by_function_qoq_pct: z.record(z.number()),
+    job_openings_by_function_six_months_growth_pct: z.record(z.number()),
+    open_jobs_timeseries: z.array(
+      z.object({
+        date: z.string(),
+        open_jobs: z.number(),
+      }),
+    ),
+    recent_job_openings: z.array(
+      z.object({
+        title: z.string(),
+        category: z.string(),
+        url: z.string().url(),
+        number_of_openings: z.number(),
+        description: z.string(),
+        date_added: z.string(),
+        date_updated: z.string(),
+        city: z.string().nullable(),
+        location_text: z.string(),
+      }),
+    ),
+  }),
+  seo: z.object({
+    average_seo_organic_rank: z.number(),
+    monthly_paid_clicks: z.number(),
+    monthly_organic_clicks: z.number(),
+    average_ad_rank: z.number(),
+    total_organic_results: z.number(),
+    monthly_google_ads_budget: z.number(),
+    monthly_organic_value: z.number(),
+    total_ads_purchased: z.number(),
+    lost_ranked_seo_keywords: z.number(),
+    gained_ranked_seo_keywords: z.number(),
+    newly_ranked_seo_keywords: z.number(),
+  }),
+  founders: z.object({
+    founders_locations: z.array(z.string()),
+    founders_education_institute: z.string(),
+    founders_degree_name: z.string(),
+    founders_previous_companies: z.array(z.string()),
+    founders_previous_titles: z.array(z.string()),
+  }),
+  news_articles: z.array(
+    z.object({
+      article_url: z.string().url(),
+      article_publisher_name: z.string(),
+      article_title: z.string(),
+      article_publish_date: z.string(),
+      company_id: z.number(),
+    }),
+  ),
+  producthunt: z.array(z.never()),
+  is_full_domain_match: z.boolean(),
+});
+
+export type CrustCompanyType = z.infer<typeof domainResponseSchema>;
+export const founderProfileSchema = z.object({
+  linkedin_profile_url: z.string().url(),
+  linkedin_flagship_url: z.string().url(),
+  name: z.string(),
+  location: z.string(),
+  title: z.string(),
+  last_updated: z.string(),
+  headline: z.string(),
+  summary: z.string().nullable(),
+  num_of_connections: z.number(),
+  skills: z.array(z.string()),
+  profile_picture_url: z.string().url(),
+  twitter_handle: z.string().nullable(),
+  languages: z.array(z.string()),
+  linkedin_open_to_cards: z.any().nullable(),
+  all_employers: z.array(z.string()),
+  past_employers: z.array(
+    z.object({
+      employer_name: z.string(),
+      employer_linkedin_id: z.string(),
+      employer_logo_url: z.string().url().nullable(),
+      employer_linkedin_description: z.string().nullable(),
+      employer_company_id: z.array(z.number()),
+      employer_company_website_domain: z.array(z.string()),
+      employee_position_id: z.number(),
+      employee_title: z.string(),
+      employee_description: z.string().nullable(),
+      employee_location: z.string(),
+      start_date: z.string(),
+      end_date: z.string(),
+    }),
+  ),
+  current_employers: z.array(
+    z.object({
+      employer_name: z.string(),
+      employer_linkedin_id: z.string(),
+      employer_logo_url: z.string().url().nullable(),
+      employer_linkedin_description: z.string().nullable(),
+      employer_company_id: z.array(z.number()),
+      employer_company_website_domain: z.array(z.string()),
+      employee_position_id: z.number(),
+      employee_title: z.string(),
+      employee_description: z.string().nullable(),
+      employee_location: z.string(),
+      start_date: z.string(),
+      end_date: z.string().nullable(),
+    }),
+  ),
+  education_background: z.array(
+    z.object({
+      degree_name: z.string(),
+      institute_name: z.string(),
+      institute_linkedin_id: z.string(),
+      institute_linkedin_url: z.string().url(),
+      institute_logo_url: z.string().url(),
+      field_of_study: z.string(),
+      activities_and_societies: z.string().nullable(),
+      start_date: z.string(),
+      end_date: z.string(),
+    }),
+  ),
+  certifications: z.any().nullable(),
+  honors: z.any().nullable(),
+  all_employers_company_id: z.array(z.number()),
+  all_titles: z.array(z.string()),
+  all_schools: z.array(z.string()),
+  all_degrees: z.array(z.string()),
+});
+
+export type CrustFounderProfile = z.infer<typeof founderProfileSchema>;
+
+export const CrustCompanyFoundersSchema = z.object({
+  company_id: z.number(),
+  domain: z.string(),
+  founders: z.array(founderProfileSchema),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type CrustCompanyFounders = z.infer<typeof CrustCompanyFoundersSchema>;
+
+const CrustProfileResponseSchema = z.object({
+  company_id: z.number(),
+  company_name: z.string(),
+  linkedin_profile_url: z.string().url(),
+  crunchbase_profile_url: z.string().url(),
+  linkedin_id: z.string(),
+  linkedin_logo_url: z.string().url(),
+  company_twitter_url: z.string().url(),
+  company_website_domain: z.string(),
+  hq_country: z.string(),
+  headquarters: z.string(),
+  largest_headcount_country: z.string(),
+  hq_street_address: z.string(),
+  company_website: z.string(),
+  year_founded: z.string(),
+  fiscal_year_end: z.string(),
+  estimated_revenue_lower_bound_usd: z.number(),
+  estimated_revenue_higher_bound_usd: z.number(),
+  employee_count_range: z.string(),
+  company_type: z.string(),
+  linkedin_company_description: z.string(),
+  acquisition_status: z.string().nullable(),
+  ceo_location: z.string(),
+  founders: z.object({
+    profiles: z.array(founderProfileSchema),
+  }),
+});
+
+export type CrustProfileResponse = z.infer<typeof CrustProfileResponseSchema>;
