@@ -35,7 +35,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!companyData) {
       console.log("Company not found");
-      return Response.json({ error: "Company not found" }, { status: 404 });
+      const profileId = await yazrServer.business.createDraft({
+        domain: domain as string,
+        description: description as string,
+        workspaceId: workspaceId,
+        userId: userId,
+        email: subject.properties.email,
+        companyName: domain as string,
+      });
+      return Response.json({ profileId });
     }
     console.log("Creating company profile with Crustdata", companyData);
     const foundersData = await crustdata.byDomainFoundersSafe(domain as string);

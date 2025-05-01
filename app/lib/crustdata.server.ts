@@ -7,7 +7,7 @@ import {
 } from "./typesCrust";
 import { Resource } from "sst";
 const crustdata = {
-  byDomain: async (domain: string): Promise<CrustCompanyType> => {
+  byDomain: async (domain: string): Promise<CrustCompanyType | null> => {
     const headers = {
       "Content-Type": "application/json, text/plain, */*",
       Authorization: `token ${Resource.CRUSTDATA_SECRET.value}`,
@@ -21,7 +21,8 @@ const crustdata = {
       },
     ).then((res) => res.json());
     console.log("response", response[0]);
-    return response[0];
+    if (response?.[0]) return response[0];
+    else return null;
   },
   byDomainFounderInfo: async (
     domain: string,
@@ -65,7 +66,7 @@ const crustdata = {
       return obj;
     }
   },
-  byDomainSafe: async (domain: string): Promise<CrustCompanyType> => {
+  byDomainSafe: async (domain: string): Promise<CrustCompanyType | null> => {
     const response = await db.crustdata.query(domain);
     if (response.length > 0) {
       let lastIndex = 0;
@@ -93,6 +94,7 @@ const crustdata = {
     }
 
     const newResponse = await crustdata.byDomain(domain);
+    if (!newResponse) return null;
     const dateString = new Date().toISOString().split("T")[0];
     const key = `${newResponse.company_website_domain}/${dateString}.json`;
     await s3.crustdata.upload(

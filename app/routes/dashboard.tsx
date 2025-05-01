@@ -36,16 +36,10 @@ import { users } from "@/lib/electroDb.server";
 import s3 from "@/lib/s3.server";
 import db from "@/lib/db.server";
 import { auth } from "@/server/auth/auth";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { User } from "@/lib/types";
 
 export default function Dashboard() {
-  const { authorised } = useLoaderData<typeof loader>();
-  const actionData = useActionData<{ user: User }>();
-  const navigate = useNavigate();
-  const url = useLocation();
-  const isLoading = useRef(false);
-
   return (
     <>
       <SidebarProvider

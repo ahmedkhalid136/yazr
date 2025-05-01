@@ -21,7 +21,8 @@ export default function Companies() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const handleClick = (profileId: string) => {
-    navigate(`/dashboard/business/${profileId}`);
+    // navigate(`/dashboard/business/${profileId}`);
+    console.log(`/dashboard/business/${profileId}`);
   };
   return (
     <div className="justify-start w-full h-full p-6 flex flex-col gap-6 md:min-w-[800px] md:max-w-[1024px]">

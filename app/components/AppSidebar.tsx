@@ -197,17 +197,13 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: User | null;
 };
 export default function AppSidebar({ user, ...props }: AppSidebarProps) {
-  // const userData = useMemo(() => {
-  //   if (!user) return null;
-  //   return {
-  //     name: user.name,
-  //     email: user.email,
-  //     avatar: user.profileImageUrl || "",
-  //   };
-  // }, [user]);
-
   return (
-    <Sidebar variant="sidebar" collapsible="icon" {...props}>
+    <Sidebar
+      variant="sidebar"
+      collapsible="none"
+      className="h-screen"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

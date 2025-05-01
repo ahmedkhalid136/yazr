@@ -110,12 +110,12 @@ const yazrServer = {
       };
 
       console.log("Sending message to processing queue");
-      await sqs.send(
-        new SendMessageCommand({
-          QueueUrl: Resource.DataProcessingQueue.url,
-          MessageBody: JSON.stringify(message),
-        }),
-      );
+      // await sqs.send(
+      //   new SendMessageCommand({
+      //     QueueUrl: Resource.DataProcessingQueue.url,
+      //     MessageBody: JSON.stringify(message),
+      //   }),
+      // );
     },
   },
 
@@ -180,11 +180,11 @@ const yazrServer = {
       userId: string;
       email: string;
       companyName: string;
-      linkedin: string;
+      linkedin?: string;
       primarySector?: string;
       subSector?: string;
-      city: string;
-      country: string;
+      city?: string;
+      country?: string;
       crustData?: CrustCompanyType;
       foundersData?: CrustCompanyFounders;
     }) => {
@@ -219,52 +219,25 @@ const yazrServer = {
             email: email,
             userId,
           },
-          webProfile: {
-            basicInfo: {
-              overview: description,
-              companyName,
-              urls: {
-                website: domain,
-                linkedin,
-              },
-              industry: {
-                primarySector,
-                subSector,
-                source: {
-                  name: "crust",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-              headquarters: {
-                city,
-                country,
-                source: {
-                  name: "crust",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-            },
-            updatedAt: new Date().toISOString(),
-          },
           companyProfile: {
             basicInfo: {
               overview: description,
               companyName,
               urls: {
                 website: domain,
-                linkedin,
+                linkedin: linkedin || "",
               },
               industry: {
-                primarySector,
-                subSector,
+                primarySector: primarySector || "",
+                subSector: subSector || "",
                 source: {
                   name: "crust",
                   details: `created via web at ${new Date().toLocaleString()} by ${email}`,
                 },
               },
               headquarters: {
-                city,
-                country,
+                city: city || "",
+                country: country || "",
                 source: {
                   name: "crust",
                   details: `created via web at ${new Date().toLocaleString()} by ${email}`,
@@ -276,7 +249,7 @@ const yazrServer = {
         };
       }
 
-      const createdBusiness = await db.businesses.create(business);
+      await db.businesses.create(business);
       return profileId;
     },
   },

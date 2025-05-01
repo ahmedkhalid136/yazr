@@ -623,6 +623,7 @@ const db = {
   },
   businesses: {
     create: async (profile: BusinessProfile) => {
+      console.log("Creating business profile", profile);
       const response = await createItem(Resource.Businesses.name, profile);
       if (!response.isSuccess) {
         throw new Error(`Error creating CompanyProfile: ${response.msg}`);
