@@ -2,11 +2,25 @@
 /// <reference path="../.sst/platform/config.d.ts" />
 
 export default function AuthStack({
-  userTable,
-  workspaceTable,
+  dbUser,
+  dbWorkspace,
+  dbEmail,
+  dbJobs,
+  dbBusinesses,
+  dbCall,
+  dbFileEntities,
+  dbCrustdata,
+  dbCrustdataFounders,
 }: {
-  userTable: sst.aws.Dynamo;
-  workspaceTable: sst.aws.Dynamo;
+  dbUser: sst.aws.Dynamo;
+  dbWorkspace: sst.aws.Dynamo;
+  dbEmail: sst.aws.Dynamo;
+  dbJobs: sst.aws.Dynamo;
+  dbBusinesses: sst.aws.Dynamo;
+  dbCall: sst.aws.Dynamo;
+  dbFileEntities: sst.aws.Dynamo;
+  dbCrustdata: sst.aws.Dynamo;
+  dbCrustdataFounders: sst.aws.Dynamo;
 }) {
   const authTable = new sst.aws.Dynamo("AuthDb", {
     fields: {
@@ -32,7 +46,19 @@ export default function AuthStack({
     forceUpgrade: "v2",
     issuer: {
       handler: "backend/auth/authorizer.handler",
-      link: [authTable, authEmail, userTable, workspaceTable],
+      link: [
+        authTable,
+        authEmail,
+        dbUser,
+        dbWorkspace,
+        dbEmail,
+        dbJobs,
+        dbBusinesses,
+        dbCall,
+        dbFileEntities,
+        dbCrustdata,
+        dbCrustdataFounders,
+      ],
     },
     domain:
       $app.stage === "prod"

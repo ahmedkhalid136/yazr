@@ -199,15 +199,15 @@ const checkIds = async (
     request.headers.get("Cookie"),
   );
   if (!userId) {
-    console.log("no userId, gotta add it to the headers", email);
+    console.log("no userId, gotta add it to the headers", userId, email);
     const user = await yazrServer.user.getByEmail({ email });
     if (!user) {
-      console.log("no user, gotta add it to the headers", email);
+      console.log("no user, gotta add it to the headerss", email);
       const userId = crypto.randomUUID();
       const workspaceId = "temp";
       return { userId, workspaceId };
     }
-    console.log("checking user", user);
+    // console.log("checking user", user);
     userId = user.PK;
     workspaceId = user.workspaceId;
     return { userId, workspaceId };

@@ -12,7 +12,7 @@ const crustdata = {
       "Content-Type": "application/json, text/plain, */*",
       Authorization: `token ${Resource.CRUSTDATA_SECRET.value}`,
     };
-    console.log(headers);
+    // console.log(headers);
     console.log(domain);
     const response = await fetch(
       `https://api.crustdata.com/screener/company?company_domain=${domain}`,
@@ -47,67 +47,77 @@ const crustdata = {
   byDomainFoundersSafe: async (
     domain: string,
   ): Promise<CrustCompanyFounders | null> => {
-    const response = await db.crustdataFounders.query(domain);
-    if (response.length > 0 && response[0].data)
-      return Array.isArray(response[0].data)
-        ? response[0].data[0]
-        : response[0].data;
-    else {
-      const response = await crustdata.byDomainFounderInfo(domain);
-      if (!response) return null;
-      const obj = {
-        domain: response.company_website_domain,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        company_id: response?.company_id,
-        founders: response?.founders.profiles,
-      };
-      await db.crustdataFounders.create(obj);
-      return obj;
+    try {
+      const response = await db.crustdataFounders.query(domain);
+      if (response.length > 0 && response[0].data)
+        return Array.isArray(response[0].data)
+          ? response[0].data[0]
+          : response[0].data;
+      else {
+        const response = await crustdata.byDomainFounderInfo(domain);
+        if (!response) return null;
+        const obj = {
+          domain: response.company_website_domain,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          company_id: response?.company_id,
+          founders: response?.founders.profiles,
+        };
+        await db.crustdataFounders.create(obj);
+        return obj;
+      }
+    } catch (error) {
+      console.error("Error fetching crustdata founders", error);
+      return null;
     }
   },
   byDomainSafe: async (domain: string): Promise<CrustCompanyType | null> => {
-    const response = await db.crustdata.query(domain);
-    if (response.length > 0) {
-      let lastIndex = 0;
-      response.forEach((item, index) => {
+    try {
+      const response = await db.crustdata.query(domain);
+      if (response.length > 0) {
+        let lastIndex = 0;
+        response.forEach((item, index) => {
+          if (
+            new Date(item.createdAt).getTime() >
+            new Date(response[lastIndex].createdAt).getTime()
+          ) {
+            lastIndex = index;
+          }
+        });
+        // if younger than a week ago, update
         if (
-          new Date(item.createdAt).getTime() >
-          new Date(response[lastIndex].createdAt).getTime()
+          new Date(response[lastIndex].createdAt).getTime() >
+          new Date().getTime() - 1000 * 60 * 60 * 24 * 7
         ) {
-          lastIndex = index;
-        }
-      });
-      // if younger than a week ago, update
-      if (
-        new Date(response[lastIndex].createdAt).getTime() >
-        new Date().getTime() - 1000 * 60 * 60 * 24 * 7
-      ) {
-        if (response[lastIndex].dataUrl) {
-          return JSON.parse(
-            (await s3.crustdata.get(response[lastIndex].dataUrl!)).toString(),
-          ) as CrustCompanyType;
-        } else {
-          return response[lastIndex].data;
+          if (response[lastIndex].dataUrl) {
+            return JSON.parse(
+              (await s3.crustdata.get(response[lastIndex].dataUrl!)).toString(),
+            ) as CrustCompanyType;
+          } else {
+            return response[lastIndex].data;
+          }
         }
       }
-    }
 
-    const newResponse = await crustdata.byDomain(domain);
-    if (!newResponse) return null;
-    const dateString = new Date().toISOString().split("T")[0];
-    const key = `${newResponse.company_website_domain}/${dateString}.json`;
-    await s3.crustdata.upload(
-      s3.lib.stringToAsyncIterable(JSON.stringify(newResponse)),
-      key,
-      "application/json",
-    );
-    await db.crustdata.create({
-      domain: newResponse.company_website_domain,
-      createdAt: new Date().toISOString(),
-      dataUrl: key,
-    });
-    return newResponse;
+      const newResponse = await crustdata.byDomain(domain);
+      if (!newResponse) return null;
+      const dateString = new Date().toISOString().split("T")[0];
+      const key = `${newResponse.company_website_domain}/${dateString}.json`;
+      await s3.crustdata.upload(
+        s3.lib.stringToAsyncIterable(JSON.stringify(newResponse)),
+        key,
+        "application/json",
+      );
+      await db.crustdata.create({
+        domain: newResponse.company_website_domain,
+        createdAt: new Date().toISOString(),
+        dataUrl: key,
+      });
+      return newResponse;
+    } catch (error) {
+      console.error("Error fetching crustdata", error);
+      return null;
+    }
   },
 };
 

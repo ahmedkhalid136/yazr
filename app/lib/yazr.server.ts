@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import {
   FileStatus,
+  Business,
+  FileType,
   JobFileType,
   JobStatus,
   JobType,
@@ -11,17 +13,25 @@ import {
   Workspace,
 } from "./types";
 import crypto from "crypto";
-import db from "./db.server";
 import s3 from "./s3.server";
-import { BusinessProfile } from "./typesCompany";
+import { BusinessProfile, CallType } from "./typesCompany";
 import {
   CrustCompanyFounders,
   CrustCompanyType,
   CrustFounderProfile,
-} from "./crustdata.server";
+} from "./typesCrust";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import { users, workspaces } from "./electroDb.server";
+import {
+  users,
+  workspaces,
+  businesses,
+  jobs,
+  calls,
+  fileEntities,
+  emails,
+} from "./electroDb.server";
+import { CreateEntityItem } from "electrodb";
 const sqs = new SQSClient({});
 
 const checkJobIntegrity = async (
@@ -32,96 +42,25 @@ const checkJobIntegrity = async (
     console.log("No createdAt or workspaceId");
     return { ok: false, jobId: "" };
   }
-  const job = await db.job.get(workspaceId, createdAt);
-  if (!job) {
-    console.log("No job", job);
+  const job = await jobs.get({ workspaceId, createdAt }).go();
+  if (!job.data) {
+    console.log("No job found for:", { workspaceId, createdAt });
     return { ok: false, jobId: "" };
   }
 
-  console.log("Job status", job.status);
-  if (job.status !== JobStatus.PENDING) {
+  console.log("Job status", job.data.status);
+  if (job.data.status !== JobStatus.PENDING) {
     console.log("Job not pending");
-    return { ok: false, jobId: "" };
+    return { ok: false, jobId: job.data.jobId };
   }
-  await db.job.update({
-    ...job,
-    status: JobStatus.PROCESSING,
-  });
-  return { ok: true, jobId: job.jobId };
+  await jobs
+    .update({ workspaceId, createdAt })
+    .set({ status: JobStatus.PROCESSING })
+    .go();
+  return { ok: true, jobId: job.data.jobId };
 };
-const yazrServer = {
-  job: {
-    createFromUpload: async ({
-      email,
-      workspaceId,
-      userId,
-      name,
-      fileUrls,
-      businessProfileId,
-      surname,
-      fileStatus,
-      jobId,
-    }: {
-      email: string;
-      fileUrls: string[];
-      workspaceId: string;
-      userId: string;
-      name: string;
-      surname: string;
-      businessProfileId: string;
-      fileStatus: {
-        fileId: string;
-        fileUrl: string;
-        status: FileStatus;
-      }[];
-      jobId?: string;
-    }): Promise<JobType> => {
-      const newJob: JobType = {
-        jobId: jobId || uuidv4(),
-        fileUrls: fileUrls,
-        status: JobStatus.PENDING,
-        constIndex: "constIndex",
-        type: JobFileType.UPLOAD,
-        businessProfileId: businessProfileId,
-        fileStatus: fileStatus.map((file) => ({
-          fileId: file.fileId,
-          fileUrl: file.fileUrl,
-          status: FileStatus.PENDING,
-        })),
-        workspaceId: workspaceId,
-        createdAt: new Date().toISOString(),
-        userId: userId,
-        creator: {
-          email: email,
-          name: name,
-          surname: surname,
-        },
-      };
 
-      await db.job.create(newJob);
-      return newJob;
-    },
-    sendToQueue: async (createdAt: string, workspaceId: string) => {
-      const job = await db.job.get(workspaceId, createdAt);
-      if (!job) {
-        throw new Error("Job not found");
-      }
-      const message: MessageProcessing = {
-        type: QueueJobType.JOB,
-        id: job.jobId,
-        nextStep: ProcessingStatus.JOB_FILE_SEQUENCER,
-      };
-
-      console.log("Sending message to processing queue");
-      // await sqs.send(
-      //   new SendMessageCommand({
-      //     QueueUrl: Resource.DataProcessingQueue.url,
-      //     MessageBody: JSON.stringify(message),
-      //   }),
-      // );
-    },
-  },
-
+const yazrServerBase = {
   uploadFileToS3: async (file: File, folderId: string): Promise<string> => {
     try {
       const fileUrl =
@@ -143,118 +82,15 @@ const yazrServer = {
     arrayBuffer: () => Promise<ArrayBuffer>;
   }): Promise<string> => {
     try {
-      // Get file contents as ArrayBuffer
       const buffer = await file.arrayBuffer();
-
-      // Use Node's crypto module
-
       const hash = crypto.createHash("sha256");
-
-      // Update hash with buffer
       hash.update(Buffer.from(buffer));
-
-      // Get hex digest
       const hashHex = hash.digest("hex");
       return hashHex;
     } catch (error) {
       console.error("Error computing file hash:", error);
       throw error;
     }
-  },
-  business: {
-    createDraft: async ({
-      domain,
-      description,
-      workspaceId,
-      userId,
-      email,
-      companyName,
-      linkedin,
-      primarySector,
-      subSector,
-      city,
-      country,
-      crustData,
-      foundersData,
-    }: {
-      domain: string;
-      description: string;
-      workspaceId: string;
-      userId: string;
-      email: string;
-      companyName: string;
-      linkedin?: string;
-      primarySector?: string;
-      subSector?: string;
-      city?: string;
-      country?: string;
-      crustData?: CrustCompanyType;
-      foundersData?: CrustCompanyFounders;
-    }) => {
-      const profileId = uuidv4();
-      const businessUrlSlug = domain.replace(/\./g, "-");
-
-      let business: BusinessProfile;
-
-      if (crustData) {
-        business = yazrServer.mapCrustDataToBusinessProfile(
-          crustData,
-          description,
-          { email, userId },
-          foundersData,
-        );
-
-        business.profileId = profileId;
-        business.businessUrlSlug = businessUrlSlug;
-        business.domain = domain;
-        business.workspaceId = workspaceId;
-      } else {
-        business = {
-          profileId,
-          businessUrlSlug,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          domain: domain,
-          hasPrivateProfile: false,
-          hasWebProfile: true,
-          workspaceId: workspaceId,
-          creator: {
-            email: email,
-            userId,
-          },
-          companyProfile: {
-            basicInfo: {
-              overview: description,
-              companyName,
-              urls: {
-                website: domain,
-                linkedin: linkedin || "",
-              },
-              industry: {
-                primarySector: primarySector || "",
-                subSector: subSector || "",
-                source: {
-                  name: "crust",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-              headquarters: {
-                city: city || "",
-                country: country || "",
-                source: {
-                  name: "crust",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-            },
-            updatedAt: new Date().toISOString(),
-          },
-        };
-      }
-
-      await db.businesses.create(business);
-      return profileId;
-    },
   },
   mapCrustDataToBusinessProfile: (
     crustData: CrustCompanyType,
@@ -268,29 +104,21 @@ const yazrServer = {
       /\./g,
       "-",
     );
-
-    // Extract founding year from year_founded string (format: YYYY-MM-DD)
     const foundedYear = crustData.year_founded
       ? parseInt(crustData.year_founded.split("-")[0])
       : undefined;
-
-    // Parse revenue range to get approximate values
     const estimatedRevenue = crustData.estimated_revenue_lower_bound_usd
       ? (crustData.estimated_revenue_lower_bound_usd +
           crustData.estimated_revenue_higher_bound_usd) /
         2
       : 0;
-
-    // Extract headquarters location components
     const headquartersComponents =
-      crustData.headquarters?.split(",").map((s) => s.trim()) || [];
+      crustData.headquarters?.split(",").map((s: string) => s.trim()) || [];
     const city = headquartersComponents[0] || "";
     const country = crustData.hq_country || "";
-
-    // Map funding rounds if available
     const fundingRounds =
       crustData.funding_and_investment?.funding_milestones_timeseries?.map(
-        (round) => ({
+        (round: any) => ({
           source: {
             name: "crust",
             details: JSON.stringify({
@@ -298,29 +126,15 @@ const yazrServer = {
               createdAt: crustData.createdAt,
             }),
           },
-          round: round.funding_round as
-            | "Unspecified"
-            | "Pre-seed"
-            | "Bridge"
-            | "Seed"
-            | "Series A"
-            | "Series B"
-            | "Series C"
-            | "Series D"
-            | "Series E"
-            | "Series F"
-            | "Series G"
-            | "Series H",
+          round: round.funding_round as any,
           date: round.date,
           amount: round.funding_milestone_amount_usd || 0,
-          valuation: 0, // Not provided in CrustData
+          valuation: 0,
           leadInvestor: round.funding_milestone_investors
             ?.split(",")[0]
             ?.trim(),
         }),
       ) || [];
-
-    // Map team members from founders if available
     const leadershipTeam =
       foundersData?.founders.map((founder: CrustFounderProfile) => ({
         name: founder.name,
@@ -328,7 +142,7 @@ const yazrServer = {
         linkedin: founder.linkedin_profile_url,
         background:
           founder.summary ||
-          `${founder.headline}. Previously at ${founder.past_employers?.map((e) => e.employer_name).join(", ")}`,
+          `${founder.headline}. Previously at ${founder.past_employers?.map((e: { employer_name: string }) => e.employer_name).join(", ")}`,
       })) || [];
     const profile = {
       updatedAt: now,
@@ -337,7 +151,7 @@ const yazrServer = {
         urls: {
           website: crustData.company_website || "",
           linkedin: crustData.linkedin_profile_url || "",
-          companiesHouse: "", // Not available in CrustData
+          companiesHouse: "",
         },
         headquarters: {
           city,
@@ -368,7 +182,6 @@ const yazrServer = {
         stage: crustData.acquisition_status || "",
         overview: description || crustData.linkedin_company_description || "",
       },
-
       teamInfo: {
         leadership: leadershipTeam,
         teamSize: crustData.headcount?.linkedin_headcount || 0,
@@ -412,9 +225,203 @@ const yazrServer = {
       companyProfile: profile,
       hasPrivateProfile: false,
       hasWebProfile: true,
-      // Additional metadata
       onePagerUrl: "",
-    };
+    } as BusinessProfile;
+  },
+};
+
+type CreateBusinessPayload = CreateEntityItem<typeof businesses>;
+type CreateUserPayload = CreateEntityItem<typeof users>;
+type CreateWorkspacePayload = CreateEntityItem<typeof workspaces>;
+type CreateJobPayload = CreateEntityItem<typeof jobs>;
+type CreateCallPayload = CreateEntityItem<typeof calls>;
+type CreateFileEntityPayload = CreateEntityItem<typeof fileEntities>;
+
+const yazrServer = {
+  ...yazrServerBase,
+  job: {
+    createFromUpload: async ({
+      email,
+      workspaceId,
+      userId,
+      name,
+      fileUrls,
+      businessProfileId,
+      surname,
+      fileStatus,
+      jobId,
+      emailId,
+    }: {
+      email: string;
+      fileUrls: string[];
+      workspaceId: string;
+      userId: string;
+      name: string;
+      surname: string;
+      businessProfileId: string;
+      fileStatus: {
+        fileId: string;
+        fileUrl: string;
+        status: FileStatus;
+      }[];
+      jobId?: string;
+      emailId: string;
+    }) => {
+      const newJob = {
+        jobId: jobId || uuidv4(),
+        fileUrls: fileUrls,
+        status: JobStatus.PENDING,
+        type: JobFileType.UPLOAD,
+        businessProfileId: businessProfileId,
+        fileStatus: fileStatus.map((file) => ({
+          fileId: file.fileId,
+          fileUrl: file.fileUrl,
+          status: FileStatus.PENDING,
+        })),
+        workspaceId: workspaceId,
+        createdAt: new Date().toISOString(),
+        userId: userId,
+        creator: {
+          email: email,
+          name: name,
+          surname: surname,
+        },
+        emailId: emailId,
+      };
+
+      await jobs.put(newJob).go();
+      return newJob;
+    },
+    get: async (workspaceId: string, createdAt: string) => {
+      const result = await jobs.get({ workspaceId, createdAt }).go();
+      return result.data;
+    },
+    update: async (jobData: any) => {
+      const { workspaceId, createdAt, ...updateData } = jobData;
+      const result = await jobs
+        .update({ workspaceId, createdAt })
+        .set(updateData)
+        .go();
+      return result.data;
+    },
+    sendToQueue: async (createdAt: string, workspaceId: string) => {
+      const jobResult = await jobs.get({ workspaceId, createdAt }).go();
+      if (!jobResult.data) {
+        throw new Error("Job not found");
+      }
+      const message: MessageProcessing = {
+        type: QueueJobType.JOB,
+        id: jobResult.data.jobId,
+        nextStep: ProcessingStatus.JOB_FILE_SEQUENCER,
+      };
+
+      console.log("Sending message to processing queue");
+    },
+  },
+  business: {
+    createDraft: async ({
+      domain,
+      description,
+      workspaceId,
+      userId,
+      email,
+      companyName,
+      linkedin,
+      primarySector,
+      subSector,
+      city,
+      country,
+      crustData,
+      foundersData,
+    }: {
+      domain: string;
+      description: string;
+      workspaceId: string;
+      userId: string;
+      email: string;
+      companyName: string;
+      linkedin?: string;
+      primarySector?: string;
+      subSector?: string;
+      city?: string;
+      country?: string;
+      crustData?: CrustCompanyType;
+      foundersData?: CrustCompanyFounders;
+    }) => {
+      const profileId = uuidv4();
+      const businessUrlSlug = domain.replace(/\./g, "-");
+
+      let businessData: Business;
+
+      if (crustData) {
+        const mappedProfile = yazrServerBase.mapCrustDataToBusinessProfile(
+          crustData,
+          description,
+          { email, userId },
+          foundersData,
+        );
+        businessData = {
+          ...mappedProfile,
+          constIndex: "constIndex",
+        };
+      } else {
+        businessData = {
+          constIndex: "constIndex",
+          profileId,
+          businessUrlSlug,
+          domain: domain,
+          hasPrivateProfile: false,
+          hasWebProfile: true,
+          workspaceId: workspaceId,
+          creator: {
+            email: email,
+            userId,
+          },
+          companyProfile: {
+            basicInfo: {
+              overview: description,
+              companyName,
+              urls: {
+                website: domain,
+                linkedin: linkedin || "",
+              },
+              industry: {
+                primarySector: primarySector || "",
+                subSector: subSector || "",
+                source: {
+                  name: "manual",
+                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
+                },
+              },
+              headquarters: {
+                city: city || "",
+                country: country || "",
+                source: {
+                  name: "manual",
+                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
+                },
+              },
+            },
+            updatedAt: new Date().toISOString(),
+          },
+        };
+      }
+
+      await businesses.put(businessData).go();
+      return profileId;
+    },
+    get: async (profileId: string): Promise<BusinessProfile | null> => {
+      const result = await businesses.get({ profileId }).go();
+      return result.data as BusinessProfile | null;
+    },
+    getAll: async (workspaceId: string): Promise<BusinessProfile[]> => {
+      if (!workspaceId) {
+        console.warn("getAllBusinesses called with empty workspaceId");
+        return [];
+      }
+      const result = await businesses.query.byWorkspace({ workspaceId }).go();
+      return result.data as BusinessProfile[];
+    },
   },
   user: {
     create: async ({
@@ -429,32 +436,119 @@ const yazrServer = {
       surname: string;
       companyName: string;
       workspaceId: string;
-    }) => {
-      const user: User = {
+    }): Promise<User> => {
+      const userPayload = {
         email,
         name,
         surname,
         companyName,
         workspaceId,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
         PK: `USER#${email}`,
         constIndex: "constIndex",
       };
-      await users.put(user).go();
-      return user;
+      await users.put(userPayload).go();
+      const createdUser = await users.get({ PK: userPayload.PK }).go();
+      return createdUser.data as User;
     },
-    getByEmail: async ({ email }: { email: string }) => {
-      console.log("querying  user by email", email);
-      const user = await users.query.byEmail({ email }).go();
-      console.log("user", user);
-      return user.data[0];
+    getByEmail: async ({ email }: { email: string }): Promise<User | null> => {
+      const result = await users.query.byEmail({ email }).go();
+      return result.data[0] as User | null;
+    },
+    getAll: async (workspaceId: string): Promise<User[]> => {
+      const result = await users.query.byWorkspace({ workspaceId }).go();
+      return result.data as User[];
     },
   },
   workspace: {
-    create: async (workspace: Workspace) => {
-      await workspaces.put(workspace).go();
-      return workspace;
+    create: async (
+      workspaceData: Omit<
+        Workspace,
+        "PK" | "createdAt" | "updatedAt" | "constIndex"
+      >,
+    ): Promise<Workspace> => {
+      const PK = `WS#${uuidv4()}`;
+      const now = Date.now();
+      const workspacePayload = {
+        ...workspaceData,
+        PK,
+        createdAt: now,
+        updatedAt: now,
+        constIndex: "constIndex",
+      };
+      await workspaces.put(workspacePayload).go();
+      const createdWs = await workspaces.get({ PK }).go();
+      return createdWs.data as Workspace;
+    },
+    get: async (PK: string): Promise<Workspace | null> => {
+      const result = await workspaces.get({ PK }).go();
+      return result.data as Workspace | null;
+    },
+  },
+  call: {
+    create: async (
+      callData: Omit<CallType, "callId" | "createdAt" | "updatedAt">,
+    ): Promise<CallType> => {
+      const callId = uuidv4();
+      const payload: any = {
+        ...callData,
+        callId,
+        summary: Array.isArray(callData.summary)
+          ? callData.summary.join("\n")
+          : callData.summary,
+        highlights: Array.isArray(callData.highlights)
+          ? callData.highlights.join("\n")
+          : callData.highlights,
+        challenges: Array.isArray(callData.challenges)
+          ? callData.challenges.join("\n")
+          : callData.challenges,
+      };
+
+      await calls.put(payload).go();
+      const createdCallResult = await calls.get({ callId }).go();
+      const createdCallData = createdCallResult.data;
+      if (createdCallData) {
+        return createdCallData as CallType;
+      }
+      throw new Error("Failed to create or retrieve call");
+    },
+    get: async (callId: string): Promise<CallType | null> => {
+      const result = await calls.get({ callId }).go();
+      return result.data as CallType | null;
+    },
+    getFromBusinessId: async (businessId: string): Promise<CallType[]> => {
+      const result = await calls.query.byBusiness({ businessId }).go();
+      return result.data as CallType[];
+    },
+  },
+  file: {
+    create: async (
+      fileData: Omit<FileType, "fileId" | "createdAt" | "updatedAt">,
+    ): Promise<FileType> => {
+      const fileId = uuidv4();
+      const payload = {
+        ...fileData,
+        fileId,
+      };
+      if (
+        !payload.businessId ||
+        !payload.jobId ||
+        !payload.workspaceId ||
+        !payload.fileSignature ||
+        !payload.status
+      ) {
+        throw new Error("Missing required fields for file entity creation");
+      }
+      await fileEntities.put(payload).go();
+      const createdFile = await fileEntities.get({ fileId }).go();
+      return createdFile.data as FileType;
+    },
+    get: async (fileId: string): Promise<FileType | null> => {
+      const result = await fileEntities.get({ fileId }).go();
+      return result.data as FileType | null;
+    },
+    queryFromBusinessId: async (businessId: string): Promise<FileType[]> => {
+      const result = await fileEntities.query.byBusiness({ businessId }).go();
+      return result.data as FileType[];
     },
   },
 };

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { User, Workspace } from "@/lib/types";
 import yazrServer from "@/lib/yazr.server";
 import { auth, setTokens, updateWorkspaceHeaders } from "@/server/auth/auth";
+import { client } from "@/server/auth/authClient";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -90,8 +91,6 @@ export async function action({ request }: ActionFunctionArgs) {
     workspaceId: workspaceId,
   };
   await yazrServer.user.create(user);
-
-  console.log("user", user);
 
   return redirect("/dashboard");
 }

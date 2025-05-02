@@ -124,7 +124,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const authorised = await auth(request);
-  console.log("dauthorised userId", authorised?.userId);
-  console.log("dauthorised workspaceId", authorised?.workspaceId);
+  // console.log("dauthorised userId", authorised?.userId);
+  // console.log("dauthorised workspaceId", authorised?.workspaceId);
   return Response.json({ authorised });
 }

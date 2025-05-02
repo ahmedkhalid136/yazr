@@ -98,7 +98,7 @@ export default function ModalDomain({
   const handleCreateCompany = async (domain: string, description: string) => {
     console.log("create company");
     setLoadingConfirm(true);
-    const result = await fetch("/api/web/createCompany", {
+    const result = await fetch("/api/business/create", {
       method: "POST",
       body: JSON.stringify({ domain, description }),
     });

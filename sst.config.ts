@@ -28,8 +28,15 @@ export default $config({
       dbUser,
     } = DbStack.default();
     const { auth } = AuthStack.default({
-      userTable: dbUser,
-      workspaceTable: dbWorkspace,
+      dbUser,
+      dbWorkspace,
+      dbEmail,
+      dbJobs,
+      dbBusinesses,
+      dbCall,
+      dbFileEntities,
+      dbCrustdata,
+      dbCrustdataFounders,
     });
     const bucketDocStoring = new sst.aws.Bucket("DocStoring");
     const bucketCrustdata = new sst.aws.Bucket("CrustdataStoring");
