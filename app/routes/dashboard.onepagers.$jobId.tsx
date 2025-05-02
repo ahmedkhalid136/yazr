@@ -108,7 +108,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const authorised = await auth(request);
 
   if (!authorised?.userId || !authorised?.workspaceId) {
-    console.log("redirecting to onboard from dashboard?");
+    console.log("redirecting to onboard from dashboard??");
     // return redirect("/onboard");
   }
   const jobId = params.jobId || "";
@@ -157,7 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
   };
 
   if (!authorised?.userId || !authorised?.workspaceId) {
-    console.log("redirecting to onboard from dashboard?");
+    console.log("redirecting to onboard from dashboard action?");
     // return redirect("/onboard");
   }
   const formData = await request.formData();

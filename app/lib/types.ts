@@ -1,6 +1,8 @@
 import { founderProfileSchema } from "./typesCrust";
 import { CompanyRawData } from "./typesCompany";
 import { z } from "zod";
+import { users, workspaces } from "./electroDb.server";
+import { EntityItem } from "electrodb";
 
 export type OpenAiFileSettings = {
   threadId: string;
@@ -8,19 +10,6 @@ export type OpenAiFileSettings = {
   fileIds: string[];
 };
 
-export const UserSchema = z.object({
-  PK: z.string(),
-  email: z.string().email(),
-  roles: z.array(z.string()).optional(),
-  createdAt: z.string(),
-  name: z.string(),
-  profileImageUrl: z.string().optional(),
-  surname: z.string(),
-  passwordHash: z.string(),
-  companyName: z.string(),
-  workspaceId: z.string(),
-  updatedAt: z.string(),
-});
 export const MiniUserSchema = z.object({
   PK: z.string(),
   name: z.string(),
@@ -29,19 +18,9 @@ export const MiniUserSchema = z.object({
   workspaceId: z.string(),
 });
 
-export type User = z.infer<typeof UserSchema>;
+export type User = EntityItem<typeof users>;
+export type Workspace = EntityItem<typeof workspaces>;
 export type MiniUser = z.infer<typeof MiniUserSchema>; // For searching users by other users in same workspace, hides fields such as email and password hash
-
-export const WorkspaceSchema = z.object({
-  PK: z.string(),
-  company: z.string(),
-  profileImageUrl: z.string().optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  workspaceId: z.string(),
-});
-
-export type Workspace = z.infer<typeof WorkspaceSchema>;
 
 export const SignupFormSchema = z.object({
   email: z.string().email(),

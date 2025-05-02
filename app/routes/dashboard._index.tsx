@@ -39,6 +39,7 @@ export default function Dashboard() {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  console.log("dashboard loader");
   const authorised = await auth(request);
   const queryParams = new URL(request.url).searchParams;
   let userProfile = undefined;
@@ -48,6 +49,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!authorised?.userId || !authorised?.workspaceId) {
     console.log("redirecting to onboard from dashboard?");
     return redirect("/login");
+  }
+
+  if (authorised.workspaceId === "temp") {
+    console.log("redirecting to onboard from dashboard?");
+    return redirect("/onboard");
   }
 
   console.log("iauthorised userId", authorised?.userId);

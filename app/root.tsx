@@ -87,21 +87,3 @@ export function App() {
 export default function Root() {
   return <App />;
 }
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const authorised = await auth(request);
-  console.log("root", authorised?.subject);
-  if (!authorised) {
-    console.log("auth url", Resource.Auth.url);
-    return login(request);
-  }
-
-  return Response.json(
-    {
-      email: authorised?.subject?.properties?.email || undefined,
-      userId: authorised?.userId || undefined,
-      ENV: {},
-    },
-    { headers: authorised.headers },
-  );
-}

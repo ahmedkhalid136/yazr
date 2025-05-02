@@ -509,36 +509,6 @@ const fakeFiles: FileType[] = [
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const db = {
-  user: {
-    create: async (userProfile: User) => {
-      const response = await createItem(Resource.UserDb.name, userProfile);
-      if (!response.isSuccess) {
-        throw new Error(`Error creating user: ${response.msg}`);
-      }
-      return response;
-    },
-    get: async (userId: string): Promise<User> => {
-      const user = (await getItem(Resource.UserDb.name, {
-        PK: userId,
-      })) as User;
-
-      return user;
-    },
-    getAll: async (workspaceId: string): Promise<User[]> => {
-      const users = await queryItems(
-        Resource.UserDb.name,
-        "WorkspaceIndex",
-        "workspaceId",
-        workspaceId,
-      );
-      return users.items || [];
-    },
-    delete: async (userId: string) => {
-      await deleteItem(Resource.UserDb.name, {
-        PK: userId,
-      });
-    },
-  },
   workspace: {
     create: async (workspace: Workspace) => {
       const response = await createItem(Resource.WorkspaceDb.name, workspace);

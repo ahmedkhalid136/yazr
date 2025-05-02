@@ -1,0 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Tech Stack Overview
+
+This project utilizes the following technologies:
+
+*   **Framework**: [Remix](mdc:vite.config.ts) (configured via Vite)
+*   **Deployment/Infrastructure**: [SST (Serverless Stack)](mdc:sst.config.ts)
+*   **Styling**: [Tailwind CSS](mdc:tailwind.config.ts)
+*   **UI Components**: [shadcn/ui](mdc:components.json)
+*   **Language**: TypeScript ([tsconfig.json](mdc:tsconfig.json))
+
+Key directories:
+*   `app/`: Contains Remix routes, components, and frontend logic.
+*   `stacks/`: Contains SST stack definitions.
+*   `public/`: Static assets.
+*   `backend/`: Likely contains backend-specific logic (e.g., database interactions, core business logic).

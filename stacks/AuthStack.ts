@@ -1,7 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../.sst/platform/config.d.ts" />
 
-export default function AuthStack() {
+export default function AuthStack({
+  userTable,
+  workspaceTable,
+}: {
+  userTable: sst.aws.Dynamo;
+  workspaceTable: sst.aws.Dynamo;
+}) {
   const authTable = new sst.aws.Dynamo("AuthDb", {
     fields: {
       pk: "string",
@@ -23,13 +29,10 @@ export default function AuthStack() {
     dns: $app.stage === "prod" ? sst.cloudflare.dns() : undefined,
   });
   const auth = new sst.aws.Auth("Auth", {
-    // authorizer: {
-    //   handler: "backend/auth/authorizer.handler",
-    //   link: [authTable, authEmail],
-    // },
+    forceUpgrade: "v2",
     issuer: {
       handler: "backend/auth/authorizer.handler",
-      link: [authTable, authEmail],
+      link: [authTable, authEmail, userTable, workspaceTable],
     },
     domain:
       $app.stage === "prod"

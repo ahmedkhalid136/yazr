@@ -1,7 +1,7 @@
 import { createCookie, redirect } from "@remix-run/node";
 import { Subject, subjects } from "../../../backend/auth/subjects";
 import { client } from "./authClient";
-import { users } from "@/lib/electroDb.server";
+import yazrServer from "@/lib/yazr.server";
 
 const accessTokenCookie = createCookie("access_token", {
   httpOnly: true,
@@ -56,6 +56,17 @@ export async function setTokens(
   return headers;
 }
 
+export async function updateWorkspaceHeaders(
+  request: Request,
+  workspaceId: string,
+) {
+  request.headers.append(
+    "Set-Cookie",
+    await workspaceIdCookie.serialize(workspaceId),
+  );
+  return request.headers;
+}
+
 export async function auth(request: Request): Promise<{
   subject: Subject;
   userId?: string;
@@ -88,6 +99,13 @@ export async function auth(request: Request): Promise<{
       verified.subject.properties.email,
     );
 
+    if (!userId || !workspaceId) {
+      console.log(
+        "no userId or workspaceId, gotta add it to the headers",
+        verified.subject.properties.email,
+      );
+      return null;
+    }
     const headers = await setTokens(
       request,
       accessToken,
@@ -181,16 +199,19 @@ const checkIds = async (
     request.headers.get("Cookie"),
   );
   if (!userId) {
-    console.log("no userId, gotta add it to the headers");
-    const user = await users.query.byEmail({ email }).go();
+    console.log("no userId, gotta add it to the headers", email);
+    const user = await yazrServer.user.getByEmail({ email });
+    if (!user) {
+      console.log("no user, gotta add it to the headers", email);
+      const userId = crypto.randomUUID();
+      const workspaceId = "temp";
+      return { userId, workspaceId };
+    }
     console.log("checking user", user);
-    userId = user.data[0]?.PK;
+    userId = user.PK;
+    workspaceId = user.workspaceId;
+    return { userId, workspaceId };
   }
-  if (!workspaceId) {
-    console.log("no workspaceId, gotta add it to the headers");
-    const user = await users.query.byEmail({ email }).go();
-    console.log("checking workspace", user.data[0]?.workspaceId);
-    workspaceId = user.data[0]?.workspaceId;
-  }
+
   return { userId, workspaceId };
 };

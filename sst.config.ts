@@ -1,28 +1,21 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./.sst/platform/config.d.ts" />
 
-import AuthStack from "./stacks/AuthStack";
-import DbStack from "./stacks/DbStack";
 export default $config({
   app(input) {
     return {
       name: "yazr",
       removal: input?.stage === "production" ? "retain" : "remove",
       home: "aws",
-      provider: {
-        aws: {
-          profile: "personal",
-          region: "eu-west-2",
-        },
-      },
+      profile: "yazr",
       providers: { aws: "6.66.2" },
+      region: "us-east-1",
       protect: ["production", "prod"].includes(input?.stage),
     };
   },
   async run() {
-    const { auth } = AuthStack();
-    const bucketDocStoring = new sst.aws.Bucket("DocStoring");
-    const bucketCrustdata = new sst.aws.Bucket("CrustdataStoring");
+    const AuthStack = await import("./stacks/AuthStack");
+    const DbStack = await import("./stacks/DbStack");
     const {
       dbEmail,
       dbJobs,
@@ -33,7 +26,14 @@ export default $config({
       dbCrustdataFounders,
       dbWorkspace,
       dbUser,
-    } = DbStack();
+    } = DbStack.default();
+    const { auth } = AuthStack.default({
+      userTable: dbUser,
+      workspaceTable: dbWorkspace,
+    });
+    const bucketDocStoring = new sst.aws.Bucket("DocStoring");
+    const bucketCrustdata = new sst.aws.Bucket("CrustdataStoring");
+
     const GEMINI_SECRET = new sst.Secret(
       "GEMINI_SECRET",
       process.env.GEMINI_API_KEY ?? "",
@@ -66,31 +66,6 @@ export default $config({
       "OPENAI_PROJECT_SECRET",
       process.env.OPENAI_PROJECT ?? "",
     );
-
-    // const emailBucket = new sst.aws.Bucket("EmailBucket");
-    // const docEmail = new sst.aws.Email("DocEmail", {
-    //   sender:
-    //     $app.stage === "prod"
-    //       ? "onepager@doc.yazr.ai"
-    //       : "onepager+dev@doc.yazr.ai",
-    // });
-    // const emailReceiver = new sst.aws.Function("EmailReceiver", {
-    //   handler: "app/server/eventSubscribers/emailBucketEvent.handler",
-    //   link: [dbJobs, bucketDocStoring, emailBucket, dbFileEntities, docEmail],
-    //   environment: {
-    //     IS_DEV: $dev === true ? "true" : "false",
-    //   },
-    // });
-
-    // emailBucket.notify({
-    //   notifications: [
-    //     {
-    //       events: ["s3:ObjectCreated:*"],
-    //       function: emailReceiver.arn,
-    //       name: "EmailReceiverNewObject",
-    //     },
-    //   ],
-    // });
 
     const secretDynameHashUUID = new sst.Secret(
       "DynameHashUUID",

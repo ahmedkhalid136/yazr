@@ -6,7 +6,7 @@ import { Resource } from "sst";
 const client = new DynamoDBClient({});
 
 const usersTable = Resource.UserDb.name;
-
+const workspacesTable = Resource.WorkspaceDb.name;
 export const users = new Entity(
   {
     model: {
@@ -70,6 +70,42 @@ export const users = new Entity(
   },
   {
     table: usersTable,
+    client,
+  },
+);
+
+export const workspaces = new Entity(
+  {
+    model: {
+      entity: "workspace",
+      version: "1",
+      service: "workspaces",
+    },
+    attributes: {
+      PK: { type: "string", required: true },
+      createdAt: { type: "number", required: true },
+      updatedAt: { type: "number", required: true },
+      constIndex: { type: "string", required: true, set: () => "constIndex" },
+      name: { type: "string", required: true },
+    },
+    indexes: {
+      primary: {
+        pk: {
+          field: "PK",
+          composite: ["PK"],
+        },
+      },
+      byConstIndex: {
+        index: "ConstIndex",
+        pk: {
+          field: "constIndex",
+          composite: ["constIndex"],
+        },
+      },
+    },
+  },
+  {
+    table: workspacesTable,
     client,
   },
 );

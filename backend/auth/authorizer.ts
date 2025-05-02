@@ -6,7 +6,7 @@ import { handle } from "hono/aws-lambda";
 import { subjects } from "./subjects.js";
 import { Resource } from "sst";
 import { sendEmail } from "./emailCode.js";
-
+import yazrServer from "@/lib/yazr.server";
 // async function getUser(email?: string): Promise<string> {
 // Get user from database
 // Return user ID
@@ -18,7 +18,6 @@ const allowedEmails = [
   "alfredo@yazr.ai",
   "laura.ruslanova@gmail.com",
   "a.belfiori@gmail.com",
-  "kasparlee001@gmail.com",
 ];
 
 const app = issuer({
@@ -54,6 +53,19 @@ const app = issuer({
           // id: await getUser(value.email),
         }),
       );
+      const user = await yazrServer.user.getByEmail({ email: value.email });
+      if (!user) {
+        console.log("user not found, gotta add it to the database");
+        const userId = crypto.randomUUID();
+        const workspaceId = "temp";
+        await yazrServer.user.create({
+          email: value.email,
+          name: "",
+          surname: "",
+          companyName: "",
+          workspaceId: workspaceId,
+        });
+      }
       return ctx.subject("user", {
         email: value.email,
         // id: await getUser(value.email),

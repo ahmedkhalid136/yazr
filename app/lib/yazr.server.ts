@@ -7,6 +7,8 @@ import {
   MessageProcessing,
   ProcessingStatus,
   QueueJobType,
+  User,
+  Workspace,
 } from "./types";
 import crypto from "crypto";
 import db from "./db.server";
@@ -19,6 +21,7 @@ import {
 } from "./crustdata.server";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+import { users, workspaces } from "./electroDb.server";
 const sqs = new SQSClient({});
 
 const checkJobIntegrity = async (
@@ -412,6 +415,47 @@ const yazrServer = {
       // Additional metadata
       onePagerUrl: "",
     };
+  },
+  user: {
+    create: async ({
+      email,
+      name,
+      surname,
+      companyName,
+      workspaceId,
+    }: {
+      email: string;
+      name: string;
+      surname: string;
+      companyName: string;
+      workspaceId: string;
+    }) => {
+      const user: User = {
+        email,
+        name,
+        surname,
+        companyName,
+        workspaceId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        PK: `USER#${email}`,
+        constIndex: "constIndex",
+      };
+      await users.put(user).go();
+      return user;
+    },
+    getByEmail: async ({ email }: { email: string }) => {
+      console.log("querying  user by email", email);
+      const user = await users.query.byEmail({ email }).go();
+      console.log("user", user);
+      return user.data[0];
+    },
+  },
+  workspace: {
+    create: async (workspace: Workspace) => {
+      await workspaces.put(workspace).go();
+      return workspace;
+    },
   },
 };
 
