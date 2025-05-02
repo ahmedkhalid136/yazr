@@ -1,4 +1,4 @@
-# Project Name (Replace with actual name if known)
+# Yazr
 
 A platform allowing users (primarily investors) to create and manage company profiles, enriched with external data and user-uploaded documents, enabling company benchmarking through a chat interface.
 
