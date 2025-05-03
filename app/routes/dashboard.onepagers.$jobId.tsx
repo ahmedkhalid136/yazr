@@ -112,8 +112,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     // return redirect("/onboard");
   }
   const jobId = params.jobId || "";
-  console.log("authorised workspaceId", authorised?.workspaceId);
-  console.log("authorised userId", authorised?.userId);
+  // console.log("authorised workspaceId", authorised?.workspaceId);
+  // console.log("authorised userId", authorised?.userId);
   const job = (await db.job.queryFromJobId(jobId))?.[0];
 
   if (!job) {

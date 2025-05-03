@@ -44,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const queryParams = new URL(request.url).searchParams;
   let userProfile = undefined;
 
-  console.log("authorised", authorised);
+  // console.log("authorised", authorised);
 
   if (!authorised?.userId || !authorised?.workspaceId) {
     console.log("redirecting to onboard from dashboard?");

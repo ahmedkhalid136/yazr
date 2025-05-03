@@ -6,8 +6,10 @@ import { CallDialog } from "@/components/CallDialog";
 import { ChevronLeft } from "lucide-react";
 import {
   Link,
+  Outlet,
   redirect,
   useLoaderData,
+  useNavigate,
   useSearchParams,
 } from "@remix-run/react";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -28,7 +30,7 @@ import {
 import { BusinessOnePager } from "@/components/Business/BusinessOnePagerTab";
 import { BusinessKeyPeople } from "@/components/Business/BusinessKeyPeopleTab";
 import UploadDocumentsAlert from "@/components/UploadDocumentsAlert";
-import { FileTab } from "@/components/Business/FileTab";
+// import { FileTab } from "@/components/Business/FileTab";
 import {
   Accordion,
   AccordionTrigger,
@@ -38,14 +40,74 @@ import {
 import crustdata from "@/lib/crustdata.server";
 import TabCalls from "@/components/TabCalls";
 
-export default function CompanyPage() {
-  const {
-    company,
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  // const db = (await import("@/lib/db.server")).default;
+  // const crustdata = (await import("@/lib/crustdata.server")).default;
+  const authObj = await auth(request);
+  if (!authObj) {
+    console.log("redirecting to login");
+    return redirect("/login");
+  }
+  const dev = [
+    "alfredo@yazr.ai",
+    "laura@yazr.ai",
+    "a.belfiori@gmail.com",
+  ].includes(authObj.subject.properties.email);
+  console.log("dev", authObj.subject.properties.email);
+
+  const workspaceId = authObj.workspaceId;
+  const userId = authObj.userId;
+  const profileId = params.profileId;
+  if (!profileId || !workspaceId) {
+    return redirect("/dashboard");
+  }
+
+  const workspace = await db.workspace.get(workspaceId);
+  const company = await db.businesses.get(profileId);
+  if (!company) {
+    return redirect("/dashboard");
+  }
+
+  const calls = await db.call.getFromBusinessId(profileId);
+  const files = await db.file.queryFromBusinessId(profileId);
+  const crust = await crustdata.byDomainSafe(company?.domain);
+  console.log("crust", crust);
+
+  return {
+    company: company as BusinessProfile,
     workspace,
     profileId,
     calls,
     files,
-    miniUsers,
+    workspaceId,
+    userId,
+    dev,
+    crustdata: crust,
+  };
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  console.log("action");
+  const formData = await request.formData();
+  const jobId = formData.get("jobId");
+  const action = formData.get("button");
+  console.log(formData.entries());
+  if (action === "refreshPager") {
+    await onePagerRerun(jobId as string);
+  }
+  return redirect(`/dashboard/business/${jobId}`);
+}
+
+const onePagerRerun = async (jobId: string) => {
+  console.log("We need to rewrite this function", jobId);
+};
+
+export default function CompanyPage() {
+  const {
+    company,
+    workspace,
+    calls,
+    files,
     workspaceId,
     userId,
     dev,
@@ -56,14 +118,13 @@ export default function CompanyPage() {
     profileId: string;
     calls: CallType[];
     files: FileType[];
-    miniUsers: MiniUser[];
     workspaceId: string;
     userId: string;
     dev: boolean;
     crustdata: CrustDataItem[];
   }>();
   const [searchParams] = useSearchParams();
-
+  const navigate = useNavigate();
   console.log("query parameters", searchParams.get("tab"));
   const tabParam = searchParams.get("tab") === "upload" ? "files" : "overview";
 
@@ -108,7 +169,14 @@ export default function CompanyPage() {
         </div> */}
       </div>
 
-      <Tabs defaultValue={tabParam} className="w-full">
+      <Tabs
+        defaultValue={tabParam}
+        className="w-full"
+        onValueChange={(v) => {
+          console.log(v);
+          navigate(`/dashboard/business/${company.profileId}/${v}`);
+        }}
+      >
         {/* Navigation Tabs */}
         <TabsList className="w-full justify-start gap-2 h-auto bg-transparent  border-b-[1.5px] border-gray-200">
           <TabsTrigger
@@ -185,8 +253,8 @@ export default function CompanyPage() {
           </TabsTrigger>
         </TabsList>
         {/* Tabs */}
-
-        <TabsContent value="overview" className="mt-6">
+        <Outlet />
+        {/* <TabsContent value="overview" className="mt-6">
           {!company.hasPrivateProfile && <UploadDocumentsAlert />}
           <BusinessOnePager
             company={company.companyProfile as BusinessData}
@@ -195,13 +263,13 @@ export default function CompanyPage() {
             profileId={company.profileId}
             editor={company.creator.email}
           />
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="keypeople" className="mt-6">
+        {/* <TabsContent value="keypeople" className="mt-6">
           <BusinessKeyPeople company={company} crustdata={crustdata} />
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="calls" className="mt-6">
+        {/* <TabsContent value="calls" className="mt-6">
           <TabCalls
             company={company}
             workspace={workspace}
@@ -209,16 +277,16 @@ export default function CompanyPage() {
             miniUsers={miniUsers}
             calls={calls}
           />
-        </TabsContent>
+        </TabsContent> */}
 
-        <TabsContent value="files" className="mt-6">
+        {/* <TabsContent value="files" className="mt-6">
           <FileTab
             files={files}
             workspaceId={workspaceId}
             userId={userId}
             businessId={company.profileId}
           />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
       {dev && (
         <Accordion type="single" collapsible>
@@ -244,71 +312,3 @@ export default function CompanyPage() {
     </div>
   );
 }
-
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  const authObj = await auth(request);
-  if (!authObj) {
-    console.log("redirecting to login");
-    return redirect("/login");
-  }
-  const dev = [
-    "alfredo@yazr.ai",
-    "laura@yazr.ai",
-    "a.belfiori@gmail.com",
-  ].includes(authObj.subject.properties.email);
-  console.log("dev", authObj.subject.properties.email);
-
-  const workspaceId = authObj.workspaceId;
-  const userId = authObj.userId;
-  const profileId = params.profileId;
-  if (!profileId || !workspaceId) {
-    return redirect("/dashboard");
-  }
-
-  const workspace = await db.workspace.get(workspaceId);
-  const company = await db.businesses.get(profileId);
-  if (!company) {
-    return redirect("/dashboard");
-  }
-  const calls = await db.call.getFromBusinessId(profileId);
-  const files = await db.file.queryFromBusinessId(profileId);
-  const crust = await crustdata.byDomainSafe(company?.domain);
-  // Get miniUsers (names of other users from the same workspace)
-  const rawUsers = await db.user.getAll(workspaceId || "");
-  const miniUserKeys = Object.keys(MiniUserSchema.shape) as (keyof MiniUser)[];
-  const miniUsers = rawUsers.map(
-    (user: User) =>
-      Object.fromEntries(
-        miniUserKeys.map((key) => [key, user[key]]),
-      ) as MiniUser,
-  );
-
-  return Response.json({
-    company: company as BusinessProfile,
-    workspace,
-    profileId,
-    calls,
-    files,
-    workspaceId,
-    userId,
-    miniUsers,
-    dev,
-    crustdata: crust,
-  });
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  console.log("action");
-  const formData = await request.formData();
-  const jobId = formData.get("jobId");
-  const action = formData.get("button");
-  console.log(formData.entries());
-  if (action === "refreshPager") {
-    await onePagerRerun(jobId as string);
-  }
-  return redirect(`/dashboard/business/${jobId}`);
-}
-
-const onePagerRerun = async (jobId: string) => {
-  console.log("We need to rewrite this function", jobId);
-};
