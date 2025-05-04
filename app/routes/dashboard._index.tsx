@@ -9,10 +9,9 @@ import {
 import { useLoaderData } from "@remix-run/react";
 
 import ModalDomain from "@/components/ModalDomain";
-import { JobType } from "@/lib/types";
 
-import { useEffect } from "react";
 import s3 from "@/lib/s3.server";
+import yazrServer from "@/lib/yazr.server";
 
 export default function Dashboard() {
   const { companies } = useLoaderData<typeof loader>();
@@ -44,8 +43,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const queryParams = new URL(request.url).searchParams;
   let userProfile = undefined;
 
-  // console.log("authorised", authorised);
-
   if (!authorised?.userId || !authorised?.workspaceId) {
     console.log("redirecting to onboard from dashboard?");
     return redirect("/login");
@@ -56,14 +53,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect("/onboard");
   }
 
-  console.log("iauthorised userId", authorised?.userId);
-  const jobs = await db.job.getLatest(authorised?.workspaceId, 10);
-  console.log("jobs in the dashboard", jobs.length);
-  const companies = await db.businesses.getAll(authorised?.workspaceId);
-  console.log("companies in the dashboard", companies.length);
+  // console.log("iauthorised userId", authorised?.userId);
+
+  const companies = await yazrServer.business.getAll(authorised?.workspaceId);
   return {
-    jobs: jobs || [],
-    userProfile: userProfile || null,
     companies: companies || [],
   };
 }

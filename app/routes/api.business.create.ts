@@ -15,8 +15,6 @@ export async function action({ request }: ActionFunctionArgs) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   const data = await request.json();
-  console.log("formData", data);
-  // return;
   const domain = data.domain;
   const description = data.description;
 
@@ -45,9 +43,9 @@ export async function action({ request }: ActionFunctionArgs) {
       });
       return Response.json({ profileId });
     }
-    console.log("Creating company profile with Crustdata", companyData);
+    console.log("Creating company profile with Crustdata");
     const foundersData = await crustdata.byDomainFoundersSafe(domain as string);
-    console.log("Founders data", foundersData);
+    console.log("Founders data");
     // Pass the Crustdata directly to createDraft
     const profileId = await yazrServer.business.createDraft({
       domain: companyData.company_website_domain as string,

@@ -80,7 +80,7 @@ _(Refer to `package.json` for specific versions and a complete list)_
 
     ```
 
-4.  **Environment Variables:** Set up necessary environment variables. This typically involves creating a `.env` file based on a template (if one exists) or setting variables for AWS credentials, API keys (Custdata, AI services), database names, etc. _(Specific variables need documentation)_.
+4.  **Environment Variables:** Set up necessary environment variables. This typically involves creating a `.env` file based on a template (if one exists) or setting variables for AWS credentials using sst Secrets, API keys (Custdata, AI services), database names, etc.
 5.  **Start the server:**
     ```bash
     npx sst dev
@@ -89,3 +89,8 @@ _(Refer to `package.json` for specific versions and a complete list)_
     ```bash
     npx sst deploy --stage <your-stage-name>
     ```
+
+## Common issues
+
+1. Add the AWS credentials to the .env file for Auth to work
+1. Add all the Secrets in the sst.config.ts as per sst secret documentation

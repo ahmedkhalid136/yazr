@@ -1,7 +1,7 @@
 import { founderProfileSchema } from "./typesCrust";
 import { CompanyRawData } from "./typesCompany";
 import { z } from "zod";
-import { users, workspaces } from "./electroDb.server";
+import { businesses, users, workspaces } from "./electroDb.server";
 import { EntityItem } from "electrodb";
 
 export type OpenAiFileSettings = {
@@ -20,6 +20,7 @@ export const MiniUserSchema = z.object({
 
 export type User = EntityItem<typeof users>;
 export type Workspace = EntityItem<typeof workspaces>;
+export type Business = EntityItem<typeof businesses>;
 export type MiniUser = z.infer<typeof MiniUserSchema>; // For searching users by other users in same workspace, hides fields such as email and password hash
 
 export const SignupFormSchema = z.object({

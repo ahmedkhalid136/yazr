@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { auth } from "@/server/auth/auth";
 import { Button } from "@/components/ui/button";
-
+import yazrServer from "@/lib/yazr.server";
 export default function Companies() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
@@ -46,16 +46,17 @@ export default function Companies() {
                 className="w-full hover:cursor-pointer"
               >
                 <TableCell className="font-medium  hover:underline">
-                  {company.companyProfile?.basicInfo.companyName}
+                  {company.domain}
                 </TableCell>
                 <TableCell className="">
-                  {company.companyProfile?.basicInfo.industry.primarySector}
+                  {company.companyProfile?.basicInfo?.industry?.primarySector ||
+                    "..."}
                 </TableCell>
                 <TableCell className="">
-                  {company.companyProfile?.basicInfo.stage || "..."}
+                  {company.companyProfile?.basicInfo?.stage || "..."}
                 </TableCell>
                 <TableCell className="text-right ">
-                  {company.companyProfile?.basicInfo.headquarters?.country ||
+                  {company.companyProfile?.basicInfo?.headquarters?.country ||
                     "..."}
                 </TableCell>
                 <TableCell className="text-right flex gap-2 justify-end">
@@ -90,7 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!workspaceId) {
       return Response.json({ companies: [] });
     }
-    const companies = await db.businesses.getAll(workspaceId);
+    const companies = await yazrServer.business.getAll(workspaceId);
     // console.log("companies", companies);
     return Response.json({ companies });
   }

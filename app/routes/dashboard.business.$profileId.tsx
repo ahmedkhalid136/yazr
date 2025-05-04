@@ -1,8 +1,4 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { CallCard } from "@/components/CallCard";
-import { CallDialog } from "@/components/CallDialog";
 import { ChevronLeft } from "lucide-react";
 import {
   Link,
@@ -13,9 +9,8 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import db from "@/lib/db.server";
+
 import { auth } from "@/server/auth/auth";
-import { useState } from "react";
 
 import { BusinessData, BusinessProfile, CallType } from "../lib/typesCompany";
 import {
@@ -37,70 +32,9 @@ import {
   AccordionItem,
   AccordionContent,
 } from "@/components/ui/accordion";
-import crustdata from "@/lib/crustdata.server";
-import TabCalls from "@/components/TabCalls";
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  // const db = (await import("@/lib/db.server")).default;
-  // const crustdata = (await import("@/lib/crustdata.server")).default;
-  const authObj = await auth(request);
-  if (!authObj) {
-    console.log("redirecting to login");
-    return redirect("/login");
-  }
-  const dev = [
-    "alfredo@yazr.ai",
-    "laura@yazr.ai",
-    "a.belfiori@gmail.com",
-  ].includes(authObj.subject.properties.email);
-  console.log("dev", authObj.subject.properties.email);
-
-  const workspaceId = authObj.workspaceId;
-  const userId = authObj.userId;
-  const profileId = params.profileId;
-  if (!profileId || !workspaceId) {
-    return redirect("/dashboard");
-  }
-
-  const workspace = await db.workspace.get(workspaceId);
-  const company = await db.businesses.get(profileId);
-  if (!company) {
-    return redirect("/dashboard");
-  }
-
-  const calls = await db.call.getFromBusinessId(profileId);
-  const files = await db.file.queryFromBusinessId(profileId);
-  const crust = await crustdata.byDomainSafe(company?.domain);
-  console.log("crust", crust);
-
-  return {
-    company: company as BusinessProfile,
-    workspace,
-    profileId,
-    calls,
-    files,
-    workspaceId,
-    userId,
-    dev,
-    crustdata: crust,
-  };
-}
-
-export async function action({ request }: ActionFunctionArgs) {
-  console.log("action");
-  const formData = await request.formData();
-  const jobId = formData.get("jobId");
-  const action = formData.get("button");
-  console.log(formData.entries());
-  if (action === "refreshPager") {
-    await onePagerRerun(jobId as string);
-  }
-  return redirect(`/dashboard/business/${jobId}`);
-}
-
-const onePagerRerun = async (jobId: string) => {
-  console.log("We need to rewrite this function", jobId);
-};
+import { CrustCompanyType } from "../lib/typesCrust";
+import { TextEdit } from "@/components/ui/textEdit";
 
 export default function CompanyPage() {
   const {
@@ -108,6 +42,7 @@ export default function CompanyPage() {
     workspace,
     calls,
     files,
+    miniUsers,
     workspaceId,
     userId,
     dev,
@@ -115,13 +50,13 @@ export default function CompanyPage() {
   } = useLoaderData<{
     company: BusinessProfile;
     workspace: Workspace;
-    profileId: string;
     calls: CallType[];
     files: FileType[];
+    miniUsers: MiniUser[];
     workspaceId: string;
     userId: string;
     dev: boolean;
-    crustdata: CrustDataItem[];
+    crustdata: CrustCompanyType | null;
   }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -150,8 +85,18 @@ export default function CompanyPage() {
             </div>
             <div>
               <h1 className="text-xl font-semibold">
-                {company.companyProfile?.basicInfo.companyName}
+                {company.companyProfile?.basicInfo?.companyName ||
+                  company.domain}
               </h1>
+              <TextEdit
+                defaultValue={
+                  company.companyProfile?.basicInfo?.companyName ||
+                  company.domain
+                }
+                className="text-4xl font-semibold"
+                actionName="updateCompanyName"
+                name="companyName"
+              />
               <a
                 href={company.domain}
                 className="text-sm text-gray-500 hover:underline"
@@ -266,7 +211,17 @@ export default function CompanyPage() {
         </TabsContent> */}
 
         {/* <TabsContent value="keypeople" className="mt-6">
-          <BusinessKeyPeople company={company} crustdata={crustdata} />
+          {crustdata?.web_traffic ? (
+            <BusinessKeyPeople
+              company={company}
+              crustdata={{
+                ...crustdata,
+                website_traffic: crustdata.web_traffic || {},
+              }}
+            />
+          ) : (
+            <p>CrustData information not available.</p>
+          )}
         </TabsContent> */}
 
         {/* <TabsContent value="calls" className="mt-6">
@@ -312,3 +267,80 @@ export default function CompanyPage() {
     </div>
   );
 }
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const yazrServer = (await import("@/lib/yazr.server")).default;
+  const crustdata = (await import("@/lib/crustdata.server")).default;
+  try {
+    const authObj = await auth(request);
+    if (!authObj) {
+      console.log("redirecting to login");
+      return redirect("/login");
+    }
+    const dev = [
+      "alfredo@yazr.ai",
+      "laura@yazr.ai",
+      "a.belfiori@gmail.com",
+    ].includes(authObj.subject.properties.email);
+    console.log("dev", authObj.subject.properties.email);
+
+    const workspaceId = authObj.workspaceId;
+    const userId = authObj.userId;
+    const profileId = params.profileId;
+    if (!profileId || !workspaceId) {
+      return redirect("/dashboard");
+    }
+
+    const workspace = await yazrServer.workspace.get(workspaceId);
+    const company = await yazrServer.business.get(profileId);
+
+    if (!company) {
+      return redirect("/dashboard");
+    }
+    const calls = await yazrServer.call.getFromBusinessId(profileId);
+    const files = await yazrServer.file.queryFromBusinessId(profileId);
+    const crust = await crustdata.byDomainSafe(company?.domain);
+    // Get miniUsers (names of other users from the same workspace)
+    const rawUsers = await yazrServer.user.getAll(workspaceId || "");
+    const miniUserKeys = Object.keys(
+      MiniUserSchema.shape,
+    ) as (keyof MiniUser)[];
+    const miniUsers = rawUsers.map(
+      (user: User) =>
+        Object.fromEntries(
+          miniUserKeys.map((key) => [key, user[key]]),
+        ) as MiniUser,
+    );
+
+    return Response.json({
+      company: company,
+      workspace,
+      profileId,
+      calls,
+      files,
+      workspaceId,
+      userId,
+      miniUsers,
+      dev,
+      crustdata: crust,
+    });
+  } catch (error) {
+    console.error("Error in loader:", error);
+    return redirect("/dashboard");
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  console.log("action");
+  const formData = await request.formData();
+  const jobId = formData.get("jobId");
+  const action = formData.get("action");
+  const formObject = Object.fromEntries(formData.entries());
+  console.log(formObject);
+  // return redirect(`/dashboard/business/${jobId}`);
+  return "Well done";
+}
+
+const onePagerRerun = async (jobId: string) => {
+  console.log("We need to rewrite this function", jobId);
+};
