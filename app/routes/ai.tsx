@@ -1,6 +1,6 @@
-import ant from "@/lib/anthropic.server";
-import gemini from "@/lib/gemini.server";
-import oai from "@/lib/openai.server";
+import gemini from "@/.server/gemini.server";
+import ant from "@/.server/anthropic.server";
+import oai from "@/.server/openai.server";
 import { ActionFunctionArgs } from "@remix-run/node";
 
 export async function action({ request }: ActionFunctionArgs) {

@@ -1,5 +1,5 @@
 import PptxGenJS from "pptxgenjs";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { z } from "zod";
 import { ShapeType } from "@/lib/pptxgenjs";
 import { WebEnhancementType } from "@/lib/types";

@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import {

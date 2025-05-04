@@ -7,6 +7,8 @@ import {
   redirect,
 } from "@remix-run/node";
 
+import Overview from "@/components/Overview";
+
 import { auth } from "@/.server/auth/auth";
 
 import { TextEdit } from "@/components/ui/textEdit";
@@ -38,7 +40,6 @@ export default function CompanyPage() {
                 className="text-4xl font-semibold"
                 actionName="updateCompanyName"
                 name="companyName"
-                isSelected={true}
                 placeholder="Company name"
                 isHideAI={true}
                 required={true}
@@ -138,7 +139,7 @@ export default function CompanyPage() {
           </TabsTrigger>
         </TabsList>
         {/* Tabs */}
-        <Outlet />
+        <Overview />
         {/* <TabsContent value="overview" className="mt-6">
           {!company.hasPrivateProfile && <UploadDocumentsAlert />}
           <BusinessOnePager

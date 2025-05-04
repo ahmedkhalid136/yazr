@@ -34,7 +34,7 @@ import {
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { users } from "@/.server/electroDb.server";
 import s3 from "@/.server/s3.server";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { auth } from "@/.server/auth/auth";
 import { useRef } from "react";
 import { User } from "@/lib/types";

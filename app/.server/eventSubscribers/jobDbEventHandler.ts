@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import {
   JobStatus,
   MessageProcessing,

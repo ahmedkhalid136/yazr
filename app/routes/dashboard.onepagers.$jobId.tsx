@@ -7,7 +7,7 @@ import {
   LoaderFunctionArgs,
   redirect,
 } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import {
   FileType,
   MessageProcessing,

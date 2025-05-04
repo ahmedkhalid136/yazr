@@ -11,7 +11,7 @@ import {
 import yazrServer from "@/lib/yazr.server";
 import { S3Event, S3EventRecord, SESEvent } from "aws-lambda";
 import { extract, LetterparserAttachment } from "letterparser";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { folders } from "@/lib/utils";
 
 const eventRecordToEmail = async (record: S3EventRecord) => {

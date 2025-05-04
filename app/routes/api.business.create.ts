@@ -1,5 +1,5 @@
-import crustdata from "@/lib/crustdata.server";
-import yazrServer from "@/lib/yazr.server";
+import crustdata from "@/.server/crustdata.server";
+import yazrServer from "@/.server/yazr.server";
 import { auth } from "@/.server/auth/auth";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 

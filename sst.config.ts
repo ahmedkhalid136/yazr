@@ -18,6 +18,7 @@ export default $config({
     const DbStack = await import("./stacks/DbStack");
     const {
       dbEmail,
+      dbTemplates,
       dbJobs,
       dbBusinesses,
       dbCall,
@@ -32,6 +33,7 @@ export default $config({
       dbWorkspace,
       dbEmail,
       dbJobs,
+      dbTemplates,
       dbBusinesses,
       dbCall,
       dbFileEntities,
@@ -94,6 +96,7 @@ export default $config({
         auth,
         dbFileEntities,
         dbCrustdataFounders,
+        dbTemplates,
         GEMINI_SECRET,
         ANTHROPIC_SECRET,
         OPENAI_SECRET,

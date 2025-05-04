@@ -1,5 +1,5 @@
 import { ActionFunctionArgs } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 
 export async function action({ request, params }: ActionFunctionArgs) {
   const formData = await request.json();

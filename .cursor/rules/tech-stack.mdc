@@ -18,3 +18,6 @@ Key directories:
 *   `stacks/`: Contains SST stack definitions.
 *   `public/`: Static assets.
 *   `backend/`: Likely contains backend-specific logic (e.g., database interactions, core business logic).
+
+Programming practices:
+*   **API**: Always use Response.json as the return of the api call to loader and action, never the json({})

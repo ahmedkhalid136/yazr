@@ -1,12 +1,12 @@
 import { ActionFunctionArgs } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/.server/electroDb.server";
 import { auth } from "@/.server/auth/auth";
 import { redirect } from "@remix-run/react";
 import { v4 as uuidv4 } from "uuid";
 import { CallType, CallSchema, BulletSchema } from "../lib/typesCompany";
 import { z } from "zod";
-import ai from "@/lib/ai.server";
-import oai_v2 from "@/lib/openai_v2.server";
+
+import oai_v2 from "@/.server/openai_v2.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   console.log("makign new call action running");
@@ -23,7 +23,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const calls = [];
     console.log("callsIds", callsIds);
     for (const callId of callsIds) {
-      const call = await db.call.get(callId.value as string);
+      const call = (await db.calls.get({ callId: callId.value as string }).go())
+        .data;
       calls.push(call);
     }
     console.log("calls", calls);
@@ -49,7 +50,11 @@ export async function action({ request }: ActionFunctionArgs) {
       z.object({ challenges: BulletSchema }),
     );
 
-    let profile = await db.businesses.get(formObject.profileId as string);
+    let profile = (
+      await db.businesses
+        .get({ profileId: formObject.profileId as string })
+        .go()
+    ).data;
     if (!profile) {
       console.log("Profile not found");
       return Response.json({ error: "Profile not found" }, { status: 404 });
@@ -62,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
       };
     }
 
-    await db.businesses.create(profile);
+    await db.businesses.put({ ...profile }).go();
 
     return null;
   }
@@ -167,7 +172,7 @@ If the expert’s concerns seem overly anecdotal or speculative, note that — b
       challenges: JSON.parse(challenges as string).challenges,
     };
 
-    await db.call.create({ ...newCall });
+    await db.calls.put({ ...newCall }).go();
 
     console.log("Call created.");
   }

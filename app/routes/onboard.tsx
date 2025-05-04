@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 import { User, Workspace } from "@/lib/types";
-import yazrServer from "@/lib/yazr.server";
+import yazrServer from "@/.server/yazr.server";
 import { auth, setTokens, updateWorkspaceHeaders } from "@/.server/auth/auth";
 import { client } from "@/.server/auth/authClient";
 import {

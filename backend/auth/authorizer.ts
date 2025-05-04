@@ -6,7 +6,7 @@ import { handle } from "hono/aws-lambda";
 import { subjects } from "./subjects.js";
 import { Resource } from "sst";
 import { sendEmail } from "./emailCode.js";
-import yazrServer from "@/lib/yazr.server";
+import yazrServer from "@/.server/yazr.server";
 // async function getUser(email?: string): Promise<string> {
 // Get user from database
 // Return user ID

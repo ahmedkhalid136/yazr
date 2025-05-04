@@ -13,7 +13,7 @@ import { Resource } from "sst";
 import { b_fileConversion } from "../processing/newFile/b_fileConversion";
 import { c_aiExtraction } from "../processing/newFile/c_aiExtraction";
 // import { e_ragPreparation } from "../processing/jobs/e_ragPreparation";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import fileAiAnalysis from "../processing/newFile/fileAiAnalysis";
 import { jobAiAnalysis } from "../processing/newFile/jobAiAnalysis";
 import { jobProfileCreation } from "../processing/newFile/jobProfileCreation";

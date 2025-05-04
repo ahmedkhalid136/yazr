@@ -1,5 +1,5 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import s3 from "@/.server/s3.server";
 
 export async function action({ request }: ActionFunctionArgs) {

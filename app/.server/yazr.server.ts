@@ -11,15 +11,15 @@ import {
   QueueJobType,
   User,
   Workspace,
-} from "./types";
+} from "@/lib/types";
 import crypto from "crypto";
 import s3 from "../.server/s3.server";
-import { BusinessProfile, CallType } from "./typesCompany";
+import { BusinessProfile, CallType } from "@/lib/typesCompany";
 import {
   CrustCompanyFounders,
   CrustCompanyType,
   CrustFounderProfile,
-} from "./typesCrust";
+} from "@/lib/typesCrust";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import {

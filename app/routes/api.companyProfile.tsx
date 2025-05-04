@@ -1,5 +1,5 @@
-import db from "@/lib/db.server";
-import { json, LoaderFunctionArgs } from "@remix-run/node";
+import db from "@/lib/db.server_dep";
+import { LoaderFunctionArgs } from "@remix-run/node";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
@@ -7,13 +7,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const id = url.searchParams.get("id");
     console.log("id", id);
 
-    const companyProfile = await db.companyProfile.get(id as string);
+    const companyProfile = (
+      await db.businesses.get({ profileId: id as string }).go()
+    ).data;
     console.log("companyProfile", companyProfile);
     if (!companyProfile) {
-      return json(null);
+      return Response.json(null);
     }
-    return json(companyProfile);
+    return Response.json(companyProfile);
   } catch (error) {
-    return json({ status: "failed" });
+    return Response.json({ status: "failed" });
   }
 };

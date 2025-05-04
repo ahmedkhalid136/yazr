@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { BusinessProfile } from "@/lib/typesCompany";
 import {
   ActionFunctionArgs,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { auth } from "@/.server/auth/auth";
 import { Button } from "@/components/ui/button";
-import yazrServer from "@/lib/yazr.server";
+import yazrServer from "@/.server/yazr.server";
 export default function Companies() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();

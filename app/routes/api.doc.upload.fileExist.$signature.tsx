@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { LoaderFunctionArgs } from "@remix-run/node";
 
 export async function loader({ params }: LoaderFunctionArgs) {

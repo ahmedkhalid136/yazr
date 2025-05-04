@@ -1,10 +1,10 @@
-import db from "./db.server";
-import s3 from "../.server/s3.server";
+import db from "@/.server/electroDb.server";
+import s3 from "@/.server/s3.server";
 import {
   CrustCompanyType,
   CrustProfileResponse,
   CrustCompanyFounders,
-} from "./typesCrust";
+} from "@/lib/typesCrust";
 import { Resource } from "sst";
 const crustdata = {
   byDomain: async (domain: string): Promise<CrustCompanyType | null> => {
@@ -48,22 +48,26 @@ const crustdata = {
     domain: string,
   ): Promise<CrustCompanyFounders | null> => {
     try {
-      const response = await db.crustdataFounders.query(domain);
-      if (response.length > 0 && response[0].data)
-        return Array.isArray(response[0].data)
-          ? response[0].data[0]
-          : response[0].data;
-      else {
-        const response = await crustdata.byDomainFounderInfo(domain);
-        if (!response) return null;
+      const response = await db.crustdataFounders.query
+        .byDomain({ domain })
+        .go();
+      if (
+        response.data &&
+        response.data.length > 0 &&
+        response.data[0].founders
+      ) {
+        return response.data[0] as CrustCompanyFounders;
+      } else {
+        const crustResponse = await crustdata.byDomainFounderInfo(domain);
+        if (!crustResponse) return null;
         const obj = {
-          domain: response.company_website_domain,
+          domain: crustResponse.company_website_domain,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          company_id: response?.company_id,
-          founders: response?.founders.profiles,
+          company_id: crustResponse?.company_id,
+          founders: crustResponse?.founders.profiles,
         };
-        await db.crustdataFounders.create(obj);
+        await db.crustdataFounders.create(obj).go();
         return obj;
       }
     } catch (error) {

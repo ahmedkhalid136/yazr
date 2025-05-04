@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { auth } from "@/.server/auth/auth";
 import s3 from "@/.server/s3.server";
 import { folders } from "@/lib/utils";

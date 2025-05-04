@@ -14,7 +14,7 @@ const callTable = Resource.Call.name;
 const fileEntitiesTable = Resource.FileEntities.name;
 const crustdataTable = Resource.Crustdata.name;
 const crustdataFoundersTable = Resource.CrustdataFounders.name;
-
+const templatesTable = Resource.Templates.name;
 export const users = new Entity(
   {
     model: {
@@ -230,6 +230,52 @@ export const jobs = new Entity(
   { table: jobsTable, client },
 );
 
+export const templates = new Entity(
+  {
+    model: {
+      entity: "template",
+      version: "1",
+      service: "templates",
+    },
+    attributes: {
+      templateId: { type: "string", required: true },
+      createdAt: { type: "string", required: true },
+      updatedAt: { type: "string", required: true },
+      templateName: { type: "string", required: true },
+      workspaceId: { type: "string", required: true },
+      fields: {
+        type: "list",
+        required: true,
+        items: {
+          type: "map",
+          required: true,
+          properties: {
+            value: { type: "string", required: true },
+            prompt: { type: "string", required: true },
+            proposeChange: { type: "string", required: true },
+            editedAt: { type: "string", required: true },
+            source: { type: "string", required: true },
+            approvedBy: { type: "string", required: true },
+            title: { type: "string", required: true },
+            category: { type: "string", required: true },
+          },
+        },
+      },
+    },
+
+    indexes: {
+      primary: {
+        pk: { field: "workspaceId", composite: ["workspaceId"] },
+      },
+      byTemplateId: {
+        index: "TemplateIdIndex",
+        pk: { field: "templateId", composite: ["templateId"] },
+      },
+    },
+  },
+  { table: templatesTable, client },
+);
+
 export const businesses = new Entity(
   {
     model: {
@@ -439,7 +485,14 @@ export const crustdataFounders = new Entity(
     attributes: {
       domain: { type: "string", required: true },
       createdAt: { type: "string", required: true },
-      data: { type: "map", required: false, properties: {} },
+      updatedAt: {
+        type: "string",
+        watch: "*",
+        set: () => new Date().toISOString(),
+        readOnly: true,
+      },
+      company_id: { type: "number", required: false },
+      founders: { type: "any", required: false },
     },
     indexes: {
       primary: {
@@ -454,3 +507,16 @@ export const crustdataFounders = new Entity(
   },
   { table: crustdataFoundersTable, client },
 );
+const db = {
+  users,
+  workspaces,
+  emails,
+  jobs,
+  businesses,
+  calls,
+  fileEntities,
+  crustdata,
+  crustdataFounders,
+};
+
+export default db;

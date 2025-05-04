@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import s3 from "@/.server/s3.server";
 import { folders } from "@/lib/utils";
 import { onePagerPPT } from "@/.server/utils/onePagerPPT";

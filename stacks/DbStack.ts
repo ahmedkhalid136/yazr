@@ -192,7 +192,23 @@ export default function DbStack() {
     },
   });
 
+  const dbTemplates = new sst.aws.Dynamo("Templates", {
+    fields: {
+      templateId: "string",
+      workspaceId: "string",
+    },
+    primaryIndex: {
+      hashKey: "workspaceId",
+    },
+    globalIndexes: {
+      TemplateIdIndex: {
+        hashKey: "templateId",
+      },
+    },
+  });
+
   return {
+    dbTemplates,
     dbUser,
     dbWorkspace,
     dbEmail,

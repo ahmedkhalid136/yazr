@@ -1,7 +1,7 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import db from "@/lib/db.server";
+import db from "@/.server/electroDb.server";
 import { auth } from "@/.server/auth/auth";
-import oai_v2 from "@/lib/openai_v2.server";
+import oai_v2 from "@/.server/openai_v2.server";
 import { BulletSchema, CallType } from "@/lib/typesCompany";
 import { z } from "zod";
 
@@ -24,7 +24,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       console.log("Call ID is required");
       return Response.json({ error: "Call ID is required" }, { status: 400 });
     }
-    const call = await db.call.get(callId);
+    const call = (await db.calls.get({ callId }).go()).data;
     if (!call) {
       console.log("Call not found");
       return Response.json({ error: "Call not found" }, { status: 404 });
@@ -53,7 +53,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
   if (action === "deleteCall") {
     console.log("Deleting call", callId);
-    await db.call.delete(callId);
+    await db.calls.delete({ callId });
     return Response.json({ message: "Call deleted" }, { status: 200 });
   }
 
@@ -166,7 +166,7 @@ Note if a concern is anecdotal or speculative, but still capture it fairly. Be c
 
     console.log("newCall", newCall);
 
-    await db.call.create({ ...newCall });
+    await db.calls.put({ ...newCall }).go();
 
     return Response.json(newCall, { status: 200 });
   }

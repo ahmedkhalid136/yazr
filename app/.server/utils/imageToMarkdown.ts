@@ -7,7 +7,7 @@ import {
 } from "./imageToMarkdownAi_dep";
 // import oai from "@/lib/openai";
 import gemini from "@/lib/gemini.server";
-import ant from "@/lib/anthropic.server";
+import ant from "@/.server/anthropic.server";
 import oai from "@/lib/openai.server";
 
 export interface Page {

@@ -1,6 +1,5 @@
-import db from "@/lib/db.server";
-import { OpenAiFileSettings } from "@/server/processing/newFile/fileOpenAiSetup.server";
-import oai from "@/lib/openai.server";
+import db from "@/.server/electroDb.server";
+import oai from "@/.server/openai.server";
 
 import { ActionFunctionArgs } from "@remix-run/node";
 
@@ -19,7 +18,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!job) {
     return Response.json({ answer: "Job not found" });
   }
-  const oaiSettings = job[0].ai?.openAiSettings as OpenAiFileSettings;
+  const oaiSettings = job[0].ai?.openAiSettings;
 
   if (!oaiSettings) {
     return Response.json({ answer: "Yazr is not yet ready" });

@@ -1,7 +1,7 @@
 import { createCookie, redirect } from "@remix-run/node";
 import { Subject, subjects } from "../../../backend/auth/subjects";
 import { client } from "./authClient";
-import yazrServer from "@/lib/yazr.server";
+import yazrServer from "@/.server/yazr.server";
 
 const accessTokenCookie = createCookie("access_token", {
   httpOnly: true,

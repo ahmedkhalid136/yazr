@@ -1,5 +1,5 @@
 import DocTile from "@/components/DocTile";
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { auth } from "@/.server/auth/auth";
 import {
   redirect,
@@ -11,7 +11,7 @@ import { Link, useLoaderData } from "@remix-run/react";
 import ModalDomain from "@/components/ModalDomain";
 
 import s3 from "@/.server/s3.server";
-import yazrServer from "@/lib/yazr.server";
+import yazrServer from "@/.server/yazr.server";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 

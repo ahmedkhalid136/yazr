@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { rawToCompanyProfile } from "./processing/newFile/rawToCompanyProfile.server";
 import { JobStatus } from "@/lib/types";
 // import { randomId } from "@/lib/utils";

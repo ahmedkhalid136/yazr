@@ -1,10 +1,9 @@
-import chromium from "@sparticuz/chromium";
 import { launch } from "puppeteer-core";
-import db from "@/lib/db.server";
+import db from "@/.server/electroDb.server";
 
-import oai from "@/lib/openai.server";
+import oai from "@/.server/openai.server";
 import { z } from "zod";
-import ant from "@/lib/anthropic.server";
+import ant from "@/.server/anthropic.server";
 import { CompanyInput, CompanyInputSchema } from "@/lib/typesCompany";
 const LOCAL_CHROUMIUM_PATH =
   "/Applications/Chromium.app/Contents/MacOS/Chromium";

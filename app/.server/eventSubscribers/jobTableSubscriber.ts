@@ -1,4 +1,4 @@
-import db from "@/lib/db.server";
+import db from "@/lib/db.server_dep";
 import { JobFileType, JobStatus, ProcessingStatus } from "@/lib/types";
 import { DynamoDBStreamEvent } from "aws-lambda";
 
