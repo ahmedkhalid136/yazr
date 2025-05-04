@@ -12,9 +12,26 @@ interface InputProps extends React.ComponentProps<"input"> {
   display?: string;
   actionName: string;
   name: string;
+  isSelected?: boolean;
+  isHideAI?: boolean;
+  isEditable?: boolean;
+  required?: boolean;
 }
 const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, actionName, name, ...props }, ref) => {
+  (
+    {
+      className,
+      type,
+      actionName,
+      name,
+      isSelected,
+      isHideAI,
+      isEditable,
+      required,
+      ...props
+    },
+    ref,
+  ) => {
     const [isEditing, setIsEditing] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
     const [value, setValue] = useState<string>(props.defaultValue as string);
@@ -28,7 +45,12 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
     const [isAILoading, setIsAILoading] = useState(false);
     const [aiResponse, setAiResponse] = useState<string>("");
     const [animatedChars, setAnimatedChars] = useState<React.ReactNode[]>([]);
-
+    const [isRequired, setIsRequired] = useState(false);
+    useEffect(() => {
+      if (isSelected) {
+        setIsEditing(true);
+      }
+    }, [isSelected]);
     // create a listener for enter and escape key
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -41,12 +63,20 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
             submit(formData, {
               method: "post",
             });
-            setInitialValue(value);
+            if (required && value === "") {
+              setIsRequired(true);
+            } else {
+              setInitialValue(value);
+            }
           }
         }
         if (e.key === "Escape") {
-          setValue(initialValue);
-          setIsEditing(false);
+          if (required && value === "") {
+            setIsRequired(true);
+          } else {
+            setValue(initialValue);
+            setIsEditing(false);
+          }
         }
       };
       document.addEventListener("keydown", handleKeyDown);
@@ -112,6 +142,12 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
       }, 1000);
     };
 
+    useEffect(() => {
+      if (required && value !== "") {
+        setIsRequired(false);
+      }
+    }, [value, required]);
+
     return (
       <Form
         method="post"
@@ -120,35 +156,83 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
         onMouseLeave={() => setIsHovering(false)}
         onSubmit={() => setIsEditing(false)}
       >
+        {!isEditing && !isAIEditing && (
+          <div
+            className="absolute left-0 top-0 w-full h-full"
+            onClick={() => {
+              if (!isEditing && !isAIEditing) {
+                setIsEditing(true);
+              }
+            }}
+          />
+        )}
+        <div
+          className={`${isRequired ? "fade-in" : "opacity-0"} absolute left-1 top-[-12px]`}
+        >
+          <Badge variant="outline" className="text-red-500 bg-gray-100 text-xs">
+            Required
+          </Badge>
+        </div>
+
         {!isEditing && isHovering && !isAIEditing && (
           <div className="absolute right-1 top-1">
             <button
               className=""
               type="button"
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setIsEditing((prev) => !prev);
               }}
             >
               <Pencil className="w-4 h-4 text-gray-500" />
             </button>
-            <button
-              className="ml-2"
-              type="button"
-              onClick={() => {
-                setIsAIEditing((prev) => !prev);
-              }}
-            >
-              <Sparkles className="w-4 h-4 text-gray-500" />
-            </button>
+            {!isHideAI && (
+              <button
+                className="ml-2"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAIEditing((prev) => !prev);
+                }}
+              >
+                <Sparkles className="w-4 h-4 text-gray-500" />
+              </button>
+            )}
           </div>
         )}
+
         {isEditing && (
           <>
+            {!isHideAI && (
+              <button
+                className="absolute right-1 top-1"
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAIEditing(true);
+                }}
+              >
+                <Sparkles className="w-4 h-4 text-gray-500" />
+              </button>
+            )}
             <button
               className="absolute right-1 top-1"
               type={value === initialValue ? "button" : "submit"}
               onClick={
-                value === initialValue ? () => setIsEditing(false) : undefined
+                value === initialValue
+                  ? (e) => {
+                      e.stopPropagation();
+                      if (required && value === "") {
+                        setIsRequired(true);
+                      } else {
+                        setIsRequired(false);
+                        setValue(initialValue);
+                        setIsEditing(false);
+                      }
+                    }
+                  : (e) => {
+                      e.stopPropagation();
+                    }
               }
               name="action"
               value={actionName}
@@ -157,9 +241,15 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
             </button>
             <button
               className="absolute right-6 top-1"
-              onClick={() => {
-                setValue(initialValue);
-                setIsEditing(false);
+              onClick={(e) => {
+                e.stopPropagation();
+                if (required && value === "") {
+                  setIsRequired(true);
+                } else {
+                  setIsRequired(false);
+                  setValue(initialValue);
+                  setIsEditing(false);
+                }
               }}
             >
               <X className="w-4 h-4 text-gray-500" />
@@ -167,7 +257,10 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
           </>
         )}
         {isAIEditing && (
-          <div className="absolute right-1 bottom-[-86px] border border-slate-300 rounded-md p-2 w-[400px] bg-white/90">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-1 bottom-[-86px] border border-slate-300 rounded-md p-2 w-[400px] bg-white/90"
+          >
             <div className="gap-2">
               <input
                 className="w-full text-gray-500"
@@ -256,11 +349,11 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
           value={value}
           onChange={(e) => setValue(e.target.value)}
           className={cn(
-            `flex min-h-9 w-full rounded-md ${
+            `flex w-full rounded-md ${
               isEditing
                 ? "border border-input shadow-sm"
                 : " border border-input border-white shadow-none"
-            } bg-transparent px-3 py-1 cursor-text transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-text disabled:opacity-100 `,
+            } bg-transparent px-3 py-0 my-1 cursor-text transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-text disabled:opacity-100 `,
             className,
           )}
           ref={mergeRefs(ref, inputRef)}

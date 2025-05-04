@@ -1,17 +1,19 @@
 import DocTile from "@/components/DocTile";
 import db from "@/lib/db.server";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import {
   redirect,
   LoaderFunctionArgs,
   ActionFunctionArgs,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 
 import ModalDomain from "@/components/ModalDomain";
 
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import yazrServer from "@/lib/yazr.server";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function Dashboard() {
   const { companies } = useLoaderData<typeof loader>();
@@ -32,6 +34,12 @@ export default function Dashboard() {
           })()}
         </h1>
         <ModalDomain companies={companies} />
+        <Link to="/dashboard/business/new">
+          <Button>
+            <Plus className="w-4 h-4" />
+            New Business
+          </Button>
+        </Link>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, redirect } from "@remix-run/node";
 import db from "@/lib/db.server";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   console.log("action admin remove");

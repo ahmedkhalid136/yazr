@@ -13,7 +13,7 @@ import {
   Workspace,
 } from "./types";
 import crypto from "crypto";
-import s3 from "./s3.server";
+import s3 from "../.server/s3.server";
 import { BusinessProfile, CallType } from "./typesCompany";
 import {
   CrustCompanyFounders,
@@ -30,7 +30,7 @@ import {
   calls,
   fileEntities,
   emails,
-} from "./electroDb.server";
+} from "../.server/electroDb.server";
 import { CreateEntityItem } from "electrodb";
 const sqs = new SQSClient({});
 

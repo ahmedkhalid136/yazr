@@ -1,5 +1,5 @@
 import db from "./db.server";
-import s3 from "./s3.server";
+import s3 from "../.server/s3.server";
 import {
   CrustCompanyType,
   CrustProfileResponse,

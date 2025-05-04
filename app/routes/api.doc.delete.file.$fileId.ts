@@ -1,5 +1,5 @@
 import db from "@/lib/db.server";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import { json, LoaderFunctionArgs } from "@remix-run/node";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

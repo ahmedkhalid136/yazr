@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import { Button } from "@/components/ui/button";
 import yazrServer from "@/lib/yazr.server";
 export default function Companies() {

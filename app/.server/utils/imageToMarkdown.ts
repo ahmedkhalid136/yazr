@@ -1,4 +1,4 @@
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import {
   encodeImageToBase64,
   formatMarkdown,

@@ -1,7 +1,7 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import db from "@/lib/db.server";
-import { auth } from "@/server/auth/auth";
-import s3 from "@/lib/s3.server";
+import { auth } from "@/.server/auth/auth";
+import s3 from "@/.server/s3.server";
 import { folders } from "@/lib/utils";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

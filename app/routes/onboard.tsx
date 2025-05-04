@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 
 import { User, Workspace } from "@/lib/types";
 import yazrServer from "@/lib/yazr.server";
-import { auth, setTokens, updateWorkspaceHeaders } from "@/server/auth/auth";
-import { client } from "@/server/auth/authClient";
+import { auth, setTokens, updateWorkspaceHeaders } from "@/.server/auth/auth";
+import { client } from "@/.server/auth/authClient";
 import {
   ActionFunctionArgs,
   LoaderFunctionArgs,

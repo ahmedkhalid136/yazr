@@ -9,7 +9,7 @@ import { remove, readFile, createWriteStream, writeFile } from "fs-extra";
 import { exec } from "child_process";
 const execAsync = promisify(exec);
 
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 
 const convertAsync = promisify(convert);
 

@@ -1,68 +1,17 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft } from "lucide-react";
+import { Link, Outlet } from "@remix-run/react";
 import {
-  Link,
-  Outlet,
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
   redirect,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
-import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+} from "@remix-run/node";
 
 import { auth } from "@/.server/auth/auth";
 
-import { BusinessData, BusinessProfile, CallType } from "../lib/typesCompany";
-import {
-  MiniUserSchema,
-  MiniUser,
-  User,
-  Workspace,
-  FileType,
-  CrustDataItem,
-} from "../lib/types";
-
-import { BusinessOnePager } from "@/components/Business/BusinessOnePagerTab";
-import { BusinessKeyPeople } from "@/components/Business/BusinessKeyPeopleTab";
-import UploadDocumentsAlert from "@/components/UploadDocumentsAlert";
-// import { FileTab } from "@/components/Business/FileTab";
-import {
-  Accordion,
-  AccordionTrigger,
-  AccordionItem,
-  AccordionContent,
-} from "@/components/ui/accordion";
-
-import { CrustCompanyType } from "../lib/typesCrust";
 import { TextEdit } from "@/components/ui/textEdit";
 
 export default function CompanyPage() {
-  const {
-    company,
-    workspace,
-    calls,
-    files,
-    miniUsers,
-    workspaceId,
-    userId,
-    dev,
-    crustdata,
-  } = useLoaderData<{
-    company: BusinessProfile;
-    workspace: Workspace;
-    calls: CallType[];
-    files: FileType[];
-    miniUsers: MiniUser[];
-    workspaceId: string;
-    userId: string;
-    dev: boolean;
-    crustdata: CrustCompanyType | null;
-  }>();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  console.log("query parameters", searchParams.get("tab"));
-  const tabParam = searchParams.get("tab") === "upload" ? "files" : "overview";
-
   return (
     <div className="container mx-auto p-4 space-y-6">
       {/* Header */}
@@ -84,27 +33,25 @@ export default function CompanyPage() {
               /> */}
             </div>
             <div>
-              <h1 className="text-xl font-semibold">
-                {company.companyProfile?.basicInfo?.companyName ||
-                  company.domain}
-              </h1>
               <TextEdit
-                defaultValue={
-                  company.companyProfile?.basicInfo?.companyName ||
-                  company.domain
-                }
+                defaultValue=""
                 className="text-4xl font-semibold"
                 actionName="updateCompanyName"
                 name="companyName"
+                isSelected={true}
+                placeholder="Company name"
+                isHideAI={true}
+                required={true}
               />
-              <a
-                href={company.domain}
-                className="text-sm text-gray-500 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {company.domain}
-              </a>
+              <TextEdit
+                defaultValue=""
+                className="text-sm text-gray-500  hover:underline"
+                actionName="updateCompanyName"
+                name="companyName"
+                placeholder="Website"
+                isHideAI={true}
+                required={true}
+              />
             </div>
           </div>
         </div>
@@ -114,14 +61,7 @@ export default function CompanyPage() {
         </div> */}
       </div>
 
-      <Tabs
-        defaultValue={tabParam}
-        className="w-full"
-        onValueChange={(v) => {
-          console.log(v);
-          navigate(`/dashboard/business/${company.profileId}/${v}`);
-        }}
-      >
+      <Tabs defaultValue="overview" className="w-full">
         {/* Navigation Tabs */}
         <TabsList className="w-full justify-start gap-2 h-auto bg-transparent  border-b-[1.5px] border-gray-200">
           <TabsTrigger
@@ -243,91 +183,16 @@ export default function CompanyPage() {
           />
         </TabsContent> */}
       </Tabs>
-      {dev && (
-        <Accordion type="single" collapsible>
-          <AccordionItem value="devData">
-            <AccordionTrigger>DEV DATA</AccordionTrigger>
-            <AccordionContent>
-              <pre className="text-xs max-w-[800px]">
-                <h1>===== Company merged data =====</h1>
-                {JSON.stringify(company.companyProfile, null, 2)}
-              </pre>
-              <pre className="text-xs max-w-[800px]">
-                <h1>====== Private data ======</h1>
-                {JSON.stringify(company.privateProfile, null, 2)}
-              </pre>
-              <pre className="text-xs max-w-[800px]">
-                <h1>====== Web data ====== </h1>
-                {JSON.stringify(company.webProfile, null, 2)}
-              </pre>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
     </div>
   );
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const yazrServer = (await import("@/lib/yazr.server")).default;
-  const crustdata = (await import("@/lib/crustdata.server")).default;
-  try {
-    const authObj = await auth(request);
-    if (!authObj) {
-      console.log("redirecting to login");
-      return redirect("/login");
-    }
-    const dev = [
-      "alfredo@yazr.ai",
-      "laura@yazr.ai",
-      "a.belfiori@gmail.com",
-    ].includes(authObj.subject.properties.email);
-    console.log("dev", authObj.subject.properties.email);
-
-    const workspaceId = authObj.workspaceId;
-    const userId = authObj.userId;
-    const profileId = params.profileId;
-    if (!profileId || !workspaceId) {
-      return redirect("/dashboard");
-    }
-
-    const workspace = await yazrServer.workspace.get(workspaceId);
-    const company = await yazrServer.business.get(profileId);
-
-    if (!company) {
-      return redirect("/dashboard");
-    }
-    const calls = await yazrServer.call.getFromBusinessId(profileId);
-    const files = await yazrServer.file.queryFromBusinessId(profileId);
-    const crust = await crustdata.byDomainSafe(company?.domain);
-    // Get miniUsers (names of other users from the same workspace)
-    const rawUsers = await yazrServer.user.getAll(workspaceId || "");
-    const miniUserKeys = Object.keys(
-      MiniUserSchema.shape,
-    ) as (keyof MiniUser)[];
-    const miniUsers = rawUsers.map(
-      (user: User) =>
-        Object.fromEntries(
-          miniUserKeys.map((key) => [key, user[key]]),
-        ) as MiniUser,
-    );
-
-    return Response.json({
-      company: company,
-      workspace,
-      profileId,
-      calls,
-      files,
-      workspaceId,
-      userId,
-      miniUsers,
-      dev,
-      crustdata: crust,
-    });
-  } catch (error) {
-    console.error("Error in loader:", error);
-    return redirect("/dashboard");
+  const authorised = await auth(request);
+  if (!authorised) {
+    return redirect("/login");
   }
+  return Response.json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -340,7 +205,3 @@ export async function action({ request }: ActionFunctionArgs) {
   // return redirect(`/dashboard/business/${jobId}`);
   return "Well done";
 }
-
-const onePagerRerun = async (jobId: string) => {
-  console.log("We need to rewrite this function", jobId);
-};

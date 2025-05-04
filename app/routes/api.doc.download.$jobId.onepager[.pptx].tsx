@@ -1,5 +1,5 @@
 import db from "@/lib/db.server";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import { folders } from "@/lib/utils";
 import { onePagerPPT } from "@/lib/onePagerPPT";
 import { LoaderFunctionArgs } from "@remix-run/node";

@@ -1,5 +1,5 @@
 import { ActionFunctionArgs } from "@remix-run/node";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   const { filename, contentType } = await request.json();

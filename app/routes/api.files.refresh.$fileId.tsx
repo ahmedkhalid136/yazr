@@ -1,8 +1,8 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import { JobFileType, ProcessingStatus } from "@/lib/types";
-import { MessageProcessing } from "@/server/eventSubscribers/dataProcessingQueueSubscriber";
+import { MessageProcessing } from "@/.server/eventSubscribers/dataProcessingQueueSubscriber";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import { Resource } from "sst";
 const sqs = new SQSClient({});

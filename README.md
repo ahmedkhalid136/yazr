@@ -62,6 +62,17 @@ This project is built using the following core technologies and libraries (based
 
 _(Refer to `package.json` for specific versions and a complete list)_
 
+## Data Structures
+
+1. Users: Our platform users, the investors, they have a name email and they all belong to a specific workspace. Each user that belong to the same workspace, will share most of the data.
+1. Workspaces: Our clinets firm profile. They have a name and a list of users.
+1. Businesses: The subject of analysis of the users. They have a name, creation date and website.
+1. Business profiles: The data about the businesses. The profile will contain the main data points. Each data point comes with the keys: value, prompt, proposeChange, editedAt, source, approvedBy.
+1. Files: Most of the data will come from documents, decks, spreadhseets, calls transcript, crustadata...
+1. Jobs: Any running analysis, is a job and this data keeps track of what is to be done, doing and done.
+1. Logs: This tracks all the main interactions that the user is having with the platform.
+1. \*Chats: Chat objects that we will maintain once we have the chat deployed.
+
 ## Setup and Installation
 
 1.  **Prerequisites:**

@@ -1,7 +1,7 @@
 import db from "@/lib/db.server";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import { folders } from "@/lib/utils";
-import { onePagerPPT } from "@/server/utils/onePagerPPT";
+import { onePagerPPT } from "@/.server/utils/onePagerPPT";
 import { ActionFunctionArgs } from "@remix-run/node";
 
 export async function loader({ params }: ActionFunctionArgs) {

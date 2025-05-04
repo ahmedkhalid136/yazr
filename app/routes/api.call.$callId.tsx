@@ -1,6 +1,6 @@
 import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import db from "@/lib/db.server";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import oai_v2 from "@/lib/openai_v2.server";
 import { BulletSchema, CallType } from "@/lib/typesCompany";
 import { z } from "zod";

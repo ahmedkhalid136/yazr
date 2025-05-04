@@ -2,7 +2,7 @@ import db from "@/lib/db.server";
 import { rawToCompanyProfile } from "./processing/newFile/rawToCompanyProfile.server";
 import { JobStatus } from "@/lib/types";
 // import { randomId } from "@/lib/utils";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import { BusinessProfile } from "@/lib/typesCompany";
 
 export const parseCompany = async (

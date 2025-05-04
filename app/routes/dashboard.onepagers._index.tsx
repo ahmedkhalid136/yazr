@@ -12,7 +12,7 @@ import {
 import { JobType } from "@/lib/types";
 import DrawerDoc from "@/components/DrawerDoc";
 import { useState } from "react";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 
 export default function Companies() {
   const data = useLoaderData<typeof loader>();

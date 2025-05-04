@@ -1,7 +1,7 @@
 import { founderProfileSchema } from "./typesCrust";
 import { CompanyRawData } from "./typesCompany";
 import { z } from "zod";
-import { businesses, users, workspaces } from "./electroDb.server";
+import { businesses, users, workspaces } from "../.server/electroDb.server";
 import { EntityItem } from "electrodb";
 
 export type OpenAiFileSettings = {

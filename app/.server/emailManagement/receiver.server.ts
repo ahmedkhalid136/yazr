@@ -1,9 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
-import s3 from "@/lib/s3.server";
+import s3 from "@/.server/s3.server";
 import {
   FileType,
   JobStatus,
-  ProcessingStatus,
+  ProcessPhase,
   JobType,
   JobFileType,
   FileStatus,
@@ -13,7 +13,6 @@ import { S3Event, S3EventRecord, SESEvent } from "aws-lambda";
 import { extract, LetterparserAttachment } from "letterparser";
 import db from "@/lib/db.server";
 import { folders } from "@/lib/utils";
-import { sendEmail } from "@/lib/email.server";
 
 const eventRecordToEmail = async (record: S3EventRecord) => {
   const s3EventRecord = record as S3EventRecord;
@@ -56,7 +55,6 @@ const hashAttachment = async (attachment: LetterparserAttachment) => {
   const file = new File([attachment.body], attachment.filename!);
   return yazrServer.computeFileHash(file);
 };
-
 export async function handler(event: SESEvent | S3Event) {
   try {
     const record = event.Records[0];
@@ -71,10 +69,6 @@ export async function handler(event: SESEvent | S3Event) {
       const businessId = uuidv4();
       const email = await eventRecordToEmail(record as S3EventRecord);
       for (const attachment of email.attachments || []) {
-        // process only pdfs
-        if (!attachment.filename?.endsWith(".pdf")) {
-          continue;
-        }
         const fileUrl = await saveAttachmentToS3(
           attachment,
           workspaceId,
@@ -90,7 +84,7 @@ export async function handler(event: SESEvent | S3Event) {
           fileUrl: fileUrl,
           workspaceId,
           jobId,
-          businessId,
+          businessId: businessId,
           category: "Other",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -101,7 +95,7 @@ export async function handler(event: SESEvent | S3Event) {
           userId: email?.from?.address || "TBD",
           fileFormat: fileUrl.split(".").pop()?.toLowerCase() as string,
           from: email.from?.address as string,
-          processPhase: ProcessingStatus.FILE_UPLOAD_START,
+          processPhase: ProcessPhase.DATA_UPLOADING,
           fileSignature: hash,
         };
 
@@ -117,9 +111,9 @@ export async function handler(event: SESEvent | S3Event) {
         status: JobStatus.PENDING,
         constIndex: "constIndex",
         type: JobFileType.EMAIL,
-        businessProfileId: businessId,
         workspaceId,
         createdAt: new Date().toISOString(),
+        businessProfileId: businessId,
         creator: {
           email: email.from?.address as string,
           name: email.from?.name as string,
@@ -130,30 +124,9 @@ export async function handler(event: SESEvent | S3Event) {
           fileUrl: f.fileUrl,
           status: FileStatus.PENDING,
         })),
-        retryCount: 0,
       };
       await db.job.create(newJob);
 
-      //send email to user
-      const emailBody =
-        email.attachments && email.attachments.length > 0
-          ? `
-      <p>Thank you for using Yazr. We have received your email and will process it shortly.</p>
-       <p> We will process the following attachments: ${email.attachments?.map((a) => a.filename).join(", ")}</p>`
-          : `<p>Thank you for using Yazr. We have received your email but we did not find any attachments.</p>`;
-      const emailSubject = "Job Status";
-      const emailTo = email.from?.address as string;
-      await sendEmail(emailTo, emailSubject, emailBody);
-      const msgNotificationAdmin = `
-      <p>New job created: ${jobId}</p>
-      <p>Email: ${email.from?.address}</p>
-      <p>Attachments: ${fileUrls.join(", ")}</p>
-      `;
-      await sendEmail(
-        "alfredo@yazr.ai",
-        `New job created from ${email.from?.address}`,
-        msgNotificationAdmin,
-      );
       return {
         ok: true,
       };

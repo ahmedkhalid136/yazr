@@ -13,7 +13,7 @@ import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 
 import "./tailwind.css";
 
-import { auth, login } from "./server/auth/auth";
+import { auth, login } from "./.server/auth/auth";
 import { Resource } from "sst";
 
 export const links: LinksFunction = () => [

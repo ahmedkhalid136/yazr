@@ -15,7 +15,7 @@ import {
   QueueJobType,
 } from "@/lib/types";
 
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import { Button } from "@/components/ui/button";
 import { File } from "lucide-react";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";

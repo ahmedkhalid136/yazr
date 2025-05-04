@@ -1,6 +1,6 @@
 import { ActionFunctionArgs } from "@remix-run/node";
 import db from "@/lib/db.server";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import { redirect } from "@remix-run/react";
 import { v4 as uuidv4 } from "uuid";
 import { CallType, CallSchema, BulletSchema } from "../lib/typesCompany";

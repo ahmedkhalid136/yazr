@@ -1,4 +1,4 @@
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 import { LoaderFunctionArgs } from "@remix-run/node";
 const PDF_CREATOR_URL = process.env.PDF_CREATOR_URL;
 
@@ -33,7 +33,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     console.error("Error creating one-pager:", error);
     return Response.json(
       { error: "Failed to create one-pager" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

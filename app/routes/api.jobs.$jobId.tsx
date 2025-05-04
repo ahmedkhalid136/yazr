@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs } from "@remix-run/node";
 import db from "@/lib/db.server";
-import { auth } from "@/server/auth/auth";
+import { auth } from "@/.server/auth/auth";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
