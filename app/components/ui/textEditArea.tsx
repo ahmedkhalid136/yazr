@@ -16,6 +16,7 @@ interface InputProps extends React.ComponentProps<"textarea"> {
   isHideAI?: boolean;
   isEditable?: boolean;
   required?: boolean;
+  animate?: boolean;
 }
 const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
   (
@@ -27,6 +28,7 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
       isHideAI,
       isEditable,
       required,
+      animate,
       ...props
     },
     ref,
@@ -150,7 +152,7 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
     return (
       <Form
         method="post"
-        className="relative w-fit"
+        className="relative w-full"
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
         onSubmit={() => setIsEditing(false)}
@@ -201,10 +203,10 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
         )}
 
         {isEditing && (
-          <>
+          <div className="absolute right-1 top-1">
             {!isHideAI && (
               <button
-                className="absolute right-1 top-1"
+                className=""
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -215,7 +217,7 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
               </button>
             )}
             <button
-              className="absolute right-1 top-1"
+              className="ml-2"
               type={value === initialValue ? "button" : "submit"}
               onClick={
                 value === initialValue
@@ -239,7 +241,7 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
               <Check className="w-4 h-4 text-gray-500" />
             </button>
             <button
-              className="absolute right-6 top-1"
+              className="ml-2"
               onClick={(e) => {
                 e.stopPropagation();
                 if (required && value === "") {
@@ -253,7 +255,7 @@ const TextEditArea = React.forwardRef<HTMLTextAreaElement, InputProps>(
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
-          </>
+          </div>
         )}
         {isAIEditing && (
           <div

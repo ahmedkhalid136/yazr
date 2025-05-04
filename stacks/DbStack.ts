@@ -92,10 +92,29 @@ export default function DbStack() {
   });
   const dbBusinesses = new sst.aws.Dynamo("Businesses", {
     fields: {
+      constIndex: "string",
+      workspaceId: "string",
+      businessId: "string",
+    },
+    primaryIndex: {
+      hashKey: "businessId",
+    },
+    globalIndexes: {
+      ConstIndex: {
+        hashKey: "constIndex",
+      },
+      WorkspaceIndex: {
+        hashKey: "workspaceId",
+      },
+    },
+  });
+  const dbProfiles = new sst.aws.Dynamo("Profiles", {
+    fields: {
       profileId: "string",
       constIndex: "string",
       workspaceId: "string",
       businessId: "string",
+      createdAt: "string",
     },
     primaryIndex: {
       hashKey: "profileId",
@@ -109,6 +128,7 @@ export default function DbStack() {
       },
       BusinessIdIndex: {
         hashKey: "businessId",
+        rangeKey: "createdAt",
       },
     },
   });
@@ -213,6 +233,7 @@ export default function DbStack() {
     dbWorkspace,
     dbEmail,
     dbJobs,
+    dbProfiles,
     dbBusinesses,
     dbCall,
     dbFileEntities,

@@ -202,10 +202,9 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
         )}
 
         {isEditing && (
-          <>
+          <div className="absolute flex gap-2 right-1 top-1">
             {!isHideAI && (
               <button
-                className="absolute right-1 top-1"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -216,7 +215,20 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
               </button>
             )}
             <button
-              className="absolute right-1 top-1"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (required && value === "") {
+                  setIsRequired(true);
+                } else {
+                  setIsRequired(false);
+                  setValue(initialValue);
+                  setIsEditing(false);
+                }
+              }}
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+            <button
               type={value === initialValue ? "button" : "submit"}
               onClick={
                 value === initialValue
@@ -239,27 +251,12 @@ const TextEdit = React.forwardRef<HTMLInputElement, InputProps>(
             >
               <Check className="w-4 h-4 text-gray-500" />
             </button>
-            <button
-              className="absolute right-6 top-1"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (required && value === "") {
-                  setIsRequired(true);
-                } else {
-                  setIsRequired(false);
-                  setValue(initialValue);
-                  setIsEditing(false);
-                }
-              }}
-            >
-              <X className="w-4 h-4 text-gray-500" />
-            </button>
-          </>
+          </div>
         )}
         {isAIEditing && (
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-1 bottom-[-86px] border border-slate-300 rounded-md p-2 w-[400px] bg-white/90"
+            className="absolute right-1 bottom-[-86px] border border-slate-300 rounded-md p-2 w-[400px] bg-white/90 z-10 bg-white"
           >
             <div className="gap-2">
               <input

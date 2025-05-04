@@ -12,6 +12,7 @@ export default function AuthStack({
   dbCrustdata,
   dbTemplates,
   dbCrustdataFounders,
+  dbProfiles,
 }: {
   dbUser: sst.aws.Dynamo;
   dbWorkspace: sst.aws.Dynamo;
@@ -23,6 +24,7 @@ export default function AuthStack({
   dbCrustdata: sst.aws.Dynamo;
   dbCrustdataFounders: sst.aws.Dynamo;
   dbTemplates: sst.aws.Dynamo;
+  dbProfiles: sst.aws.Dynamo;
 }) {
   const authTable = new sst.aws.Dynamo("AuthDb", {
     fields: {
@@ -61,6 +63,7 @@ export default function AuthStack({
         dbCrustdata,
         dbCrustdataFounders,
         dbTemplates,
+        dbProfiles,
       ],
     },
     domain:

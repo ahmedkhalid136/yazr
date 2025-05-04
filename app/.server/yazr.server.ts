@@ -22,7 +22,7 @@ import {
 } from "@/lib/typesCrust";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import {
+import db, {
   users,
   workspaces,
   businesses,
@@ -30,6 +30,7 @@ import {
   calls,
   fileEntities,
   emails,
+  templates,
 } from "../.server/electroDb.server";
 import { CreateEntityItem } from "electrodb";
 const sqs = new SQSClient({});
@@ -236,7 +237,7 @@ type CreateWorkspacePayload = CreateEntityItem<typeof workspaces>;
 type CreateJobPayload = CreateEntityItem<typeof jobs>;
 type CreateCallPayload = CreateEntityItem<typeof calls>;
 type CreateFileEntityPayload = CreateEntityItem<typeof fileEntities>;
-
+type TemplatePayload = CreateEntityItem<typeof templates>;
 const yazrServer = {
   ...yazrServerBase,
   job: {
@@ -410,6 +411,70 @@ const yazrServer = {
       await businesses.put(businessData).go();
       return profileId;
     },
+    create: async ({
+      name,
+      domain,
+      description,
+      workspaceId,
+      userId,
+      email,
+    }: {
+      name: string;
+      domain: string;
+      description: string;
+      workspaceId: string;
+      userId: string;
+      email: string;
+    }) => {
+      const businessId = uuidv4();
+      const businessUrlSlug = domain.replace(/\./g, "-");
+      const businessData: Business = {
+        businessId,
+        businessUrlSlug,
+        domain,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        workspaceId,
+        name,
+        hasPrivateProfile: false,
+        hasWebProfile: true,
+        constIndex: "constIndex",
+        creator: {
+          email: email,
+          userId,
+        },
+      };
+      await db.businesses.put(businessData).go();
+
+      const template = await yazrServer.template.get({ workspaceId });
+      if (!template) {
+        throw new Error("Template not found");
+      }
+      const fields = template.fields.map((field) => {
+        if (field.category === "Product" && field.title === "description") {
+          field.value = description;
+          return field;
+        }
+        return field;
+      });
+      const profileId = uuidv4();
+      const newProfile: BusinessProfile = {
+        fields,
+        profileId,
+        businessUrlSlug,
+        domain,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        hasPrivateProfile: false,
+        hasWebProfile: false,
+        creator: {
+          email: email,
+          userId,
+        },
+      };
+      await db.profiles.put(newProfile).go();
+      return profileId;
+    },
     get: async (profileId: string): Promise<BusinessProfile | null> => {
       const result = await businesses.get({ profileId }).go();
       return result.data as BusinessProfile | null;
@@ -549,6 +614,96 @@ const yazrServer = {
     queryFromBusinessId: async (businessId: string): Promise<FileType[]> => {
       const result = await fileEntities.query.byBusiness({ businessId }).go();
       return result.data as FileType[];
+    },
+  },
+  template: {
+    defaultFields: [
+      {
+        type: "text",
+        required: true,
+        category: "product",
+        value: "",
+        prompt: "Please provide a description of the product",
+        proposeChange: "",
+        editedAt: new Date().toISOString(),
+        source: "template",
+        approvedBy: "admin",
+        title: "Description",
+      },
+      {
+        type: "text",
+        required: true,
+        category: "product",
+        value: "",
+        prompt:
+          "Please provide a description of the competitive advantage of the product",
+        proposeChange: "",
+        editedAt: new Date().toISOString(),
+        source: "template",
+        approvedBy: "admin",
+        title: "Competitive Advantage",
+      },
+      {
+        type: "text",
+        required: true,
+        category: "product",
+        value: "",
+        prompt:
+          "Please provide a description of the target market for the product",
+        proposeChange: "",
+        editedAt: new Date().toISOString(),
+        source: "template",
+        approvedBy: "admin",
+        title: "Target Market",
+      },
+      {
+        type: "text",
+        required: true,
+        category: "product",
+        value: "",
+        prompt:
+          "Please provide a description of the target market for the product",
+        proposeChange: "",
+        editedAt: new Date().toISOString(),
+        source: "template",
+        approvedBy: "admin",
+        title: "Pricing Model",
+      },
+    ],
+    get: async ({
+      workspaceId,
+    }: {
+      workspaceId: string;
+    }): Promise<TemplatePayload> => {
+      const templates = (await db.templates.query.primary({ workspaceId }).go())
+        .data[0];
+      if (!templates) {
+        const newTemplate: TemplatePayload = {
+          templateId: uuidv4(),
+          workspaceId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          industry: "new",
+          fields: yazrServer.template.defaultFields,
+          title: "New Template",
+        };
+        await db.templates.put(newTemplate).go();
+        return newTemplate;
+      }
+      return templates;
+    },
+  },
+  profile: {
+    create: async (
+      profileData: Omit<
+        BusinessProfile,
+        "profileId" | "createdAt" | "updatedAt"
+      >,
+    ): Promise<BusinessProfile> => {
+      const profileId = uuidv4();
+      const payload = { ...profileData, profileId };
+      await db.profiles.put(payload).go();
+      return payload;
     },
   },
 };

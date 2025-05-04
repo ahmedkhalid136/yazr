@@ -41,8 +41,8 @@ export default function CompanyPage() {
                 actionName="updateCompanyName"
                 name="companyName"
                 placeholder="Company name"
-                isHideAI={true}
-                required={true}
+                // isHideAI={true}
+                // required={true}
               />
               <TextEdit
                 defaultValue=""

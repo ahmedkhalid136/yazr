@@ -9,6 +9,7 @@ const usersTable = Resource.UserDb.name;
 const workspacesTable = Resource.WorkspaceDb.name;
 const emailTable = Resource.EmailTable.name;
 const jobsTable = Resource.Jobs.name;
+const profilesTable = Resource.Profiles.name;
 const businessesTable = Resource.Businesses.name;
 const callTable = Resource.Call.name;
 const fileEntitiesTable = Resource.FileEntities.name;
@@ -241,8 +242,9 @@ export const templates = new Entity(
       templateId: { type: "string", required: true },
       createdAt: { type: "string", required: true },
       updatedAt: { type: "string", required: true },
-      templateName: { type: "string", required: true },
       workspaceId: { type: "string", required: true },
+      title: { type: "string", required: true },
+      industry: { type: "string", required: true },
       fields: {
         type: "list",
         required: true,
@@ -276,7 +278,7 @@ export const templates = new Entity(
   { table: templatesTable, client },
 );
 
-export const businesses = new Entity(
+export const profiles = new Entity(
   {
     model: {
       entity: "business",
@@ -290,19 +292,9 @@ export const businesses = new Entity(
         default: () => new Date().toISOString(),
         readOnly: true,
       },
-      updatedAt: {
-        type: "string",
-        watch: "*",
-        set: () => new Date().toISOString(),
-        readOnly: true,
-      },
       constIndex: { type: "string", required: true, set: () => "constIndex" },
       workspaceId: { type: "string", required: true },
       businessId: { type: "string", required: false },
-      domain: { type: "string", required: true },
-      businessUrlSlug: { type: "string", required: false },
-      hasPrivateProfile: { type: "boolean", required: false },
-      hasWebProfile: { type: "boolean", required: false },
       creator: {
         type: "map",
         required: true,
@@ -311,10 +303,24 @@ export const businesses = new Entity(
           userId: { type: "string", required: true },
         },
       },
-      companyProfile: { type: "map", required: false, properties: {} },
-      webProfile: { type: "map", required: false, properties: {} },
-      privateProfile: { type: "map", required: false, properties: {} },
-      onePagerUrl: { type: "string", required: false },
+      fields: {
+        type: "list",
+        required: true,
+        items: {
+          type: "map",
+          required: true,
+          properties: {
+            value: { type: "string", required: true },
+            prompt: { type: "string", required: true },
+            proposeChange: { type: "string", required: true },
+            editedAt: { type: "string", required: true },
+            source: { type: "string", required: true },
+            approvedBy: { type: "string", required: true },
+            title: { type: "string", required: true },
+            category: { type: "string", required: true },
+          },
+        },
+      },
     },
     indexes: {
       primary: {
@@ -331,7 +337,61 @@ export const businesses = new Entity(
       },
       byBusinessId: {
         index: "BusinessIdIndex",
+        pk: { field: "businessId", composite: ["businessId", "createdAt"] },
+      },
+    },
+  },
+  { table: profilesTable, client },
+);
+
+export const businesses = new Entity(
+  {
+    model: {
+      entity: "business",
+      version: "1",
+      service: "businesses",
+    },
+    attributes: {
+      businessId: { type: "string", required: true },
+      createdAt: {
+        type: "string",
+        default: () => new Date().toISOString(),
+        readOnly: true,
+      },
+      updatedAt: {
+        type: "string",
+        watch: "*",
+        set: () => new Date().toISOString(),
+        readOnly: true,
+      },
+      constIndex: { type: "string", required: true, set: () => "constIndex" },
+      workspaceId: { type: "string", required: true },
+      domain: { type: "string", required: true },
+      name: { type: "string", required: true },
+      businessUrlSlug: { type: "string", required: false },
+      hasPrivateProfile: { type: "boolean", required: false },
+      hasWebProfile: { type: "boolean", required: false },
+      creator: {
+        type: "map",
+        required: true,
+        properties: {
+          email: { type: "string", required: true },
+          userId: { type: "string", required: true },
+        },
+      },
+    },
+    indexes: {
+      primary: {
         pk: { field: "businessId", composite: ["businessId"] },
+      },
+      byConstIndex: {
+        index: "ConstIndex",
+        pk: { field: "constIndex", composite: ["constIndex"] },
+      },
+      byWorkspace: {
+        index: "WorkspaceIndex",
+        pk: { field: "workspaceId", composite: ["workspaceId"] },
+        projection: "all",
       },
     },
   },
@@ -517,6 +577,8 @@ const db = {
   fileEntities,
   crustdata,
   crustdataFounders,
+  templates,
+  profiles,
 };
 
 export default db;

@@ -84,27 +84,20 @@ export default function CompanyPage() {
               /> */}
             </div>
             <div>
-              <h1 className="text-xl font-semibold">
-                {company.companyProfile?.basicInfo?.companyName ||
-                  company.domain}
-              </h1>
               <TextEdit
-                defaultValue={
-                  company.companyProfile?.basicInfo?.companyName ||
-                  company.domain
-                }
+                defaultValue={company.name || company.domain}
                 className="text-4xl font-semibold"
                 actionName="updateCompanyName"
                 name="companyName"
+                placeholder="Company name"
               />
-              <a
-                href={company.domain}
+              <TextEdit
+                defaultValue={company.domain}
                 className="text-sm text-gray-500 hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {company.domain}
-              </a>
+                actionName="updateDomain"
+                name="domain"
+                placeholder="Company website"
+              />
             </div>
           </div>
         </div>
@@ -243,6 +236,7 @@ export default function CompanyPage() {
           />
         </TabsContent> */}
       </Tabs>
+
       {dev && (
         <Accordion type="single" collapsible>
           <AccordionItem value="devData">
@@ -269,8 +263,8 @@ export default function CompanyPage() {
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const yazrServer = (await import("@/lib/yazr.server")).default;
-  const crustdata = (await import("@/lib/crustdata.server")).default;
+  const yazrServer = (await import("@/.server/yazr.server")).default;
+  const crustdata = (await import("@/.server/crustdata.server")).default;
   try {
     const authObj = await auth(request);
     if (!authObj) {

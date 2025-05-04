@@ -17,28 +17,30 @@ export default $config({
     const AuthStack = await import("./stacks/AuthStack");
     const DbStack = await import("./stacks/DbStack");
     const {
-      dbEmail,
-      dbTemplates,
-      dbJobs,
+      dbUser,
+      dbWorkspace,
       dbBusinesses,
+      dbProfiles,
       dbCall,
       dbFileEntities,
       dbCrustdata,
+      dbTemplates,
       dbCrustdataFounders,
-      dbWorkspace,
-      dbUser,
+      dbJobs,
+      dbEmail,
     } = DbStack.default();
     const { auth } = AuthStack.default({
       dbUser,
       dbWorkspace,
-      dbEmail,
-      dbJobs,
       dbTemplates,
+      dbProfiles,
       dbBusinesses,
       dbCall,
       dbFileEntities,
       dbCrustdata,
       dbCrustdataFounders,
+      dbJobs,
+      dbEmail,
     });
     const bucketDocStoring = new sst.aws.Bucket("DocStoring");
     const bucketCrustdata = new sst.aws.Bucket("CrustdataStoring");
@@ -92,6 +94,7 @@ export default $config({
         dbBusinesses,
         dbCall,
         // pdfCreator,
+        dbProfiles,
         dbCrustdata,
         auth,
         dbFileEntities,
