@@ -1,5 +1,5 @@
 import db from "@/lib/db.server_dep";
-import { JobFileType, JobStatus, ProcessingStatus } from "@/lib/types";
+import { JobFileType, JobStatus, ProcessingStatus } from "@/lib/types_dep";
 import { DynamoDBStreamEvent } from "aws-lambda";
 
 import { Resource } from "sst";

@@ -2,7 +2,7 @@ import PptxGenJS from "pptxgenjs";
 import db from "@/lib/db.server_dep";
 import { z } from "zod";
 import { ShapeType } from "@/lib/pptxgenjs";
-import { WebEnhancementType } from "@/lib/types";
+import { WebEnhancementType } from "@/lib/types_dep";
 import { CompanyInput } from "@/lib/typesCompany";
 
 export async function onePagerPPT(

@@ -16,7 +16,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { JobType, JobStatus, FileType } from "@/lib/types";
+import { JobType, JobStatus, FileType } from "@/lib/types_dep";
 
 import { ChevronsUpDown, Download, RefreshCw, Trash2Icon } from "lucide-react";
 

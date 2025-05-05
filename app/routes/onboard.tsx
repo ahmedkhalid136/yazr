@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import { User, Workspace } from "@/lib/types";
+import { User, Workspace } from "@/lib/types_dep";
 import yazrServer from "@/.server/yazr.server";
 import { auth, setTokens, updateWorkspaceHeaders } from "@/.server/auth/auth";
 import { client } from "@/.server/auth/authClient";

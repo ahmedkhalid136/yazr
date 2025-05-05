@@ -25,7 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { User } from "@/lib/types";
+import { User } from "@/lib/types_dep";
 import { useMemo } from "react";
 import { Link } from "@remix-run/react";
 

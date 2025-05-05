@@ -5,7 +5,7 @@ import {
   MessageProcessing,
   ProcessingStatus,
   QueueJobType,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 import { DynamoDBStreamEvent } from "aws-lambda";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";

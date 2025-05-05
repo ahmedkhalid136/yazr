@@ -58,6 +58,7 @@ export default function ModalDomain({
   const [domain, setDomain] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [loadingConfirm, setLoadingConfirm] = useState<boolean>(false);
   const companyWebsites = companies.map((company) => ({
     value: company.domain,
@@ -80,11 +81,15 @@ export default function ModalDomain({
       const sanitisedDomain = domain
         .replace("https://", "")
         .replace("http://", "");
-      fetch("/api/web/getCompanyWebsiteFromGemini?domain=" + sanitisedDomain)
+      fetch("/api/web/getCompanyWebsiteFromGemini", {
+        method: "POST",
+        body: JSON.stringify({ domain: sanitisedDomain }),
+      })
         .then((res) => res.json())
         .then((res) => {
-          setDescription(res.content);
-          setDomain(domain);
+          setDescription(res.description);
+          setDomain(res.domain);
+          setName(res.name);
           setIsLoading(false);
         })
         .finally(() => {
@@ -100,19 +105,19 @@ export default function ModalDomain({
     setLoadingConfirm(true);
     const result = await fetch("/api/business/create", {
       method: "POST",
-      body: JSON.stringify({ domain, description }),
+      body: JSON.stringify({ name, domain, description }),
     });
 
     const data = await result.json();
     console.log(data);
-    const profileId = data.profileId;
-    if (!profileId) {
+    const businessId = data.businessId;
+    if (!businessId) {
       setError("Failed to create company");
       setLoadingConfirm(false);
       return;
     }
     setLoadingConfirm(false);
-    navigate("/dashboard/business/" + profileId);
+    navigate("/dashboard/business/" + businessId + "/overview"w);
   };
 
   return (

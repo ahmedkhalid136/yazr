@@ -7,7 +7,7 @@ import {
   JobType,
   JobFileType,
   FileStatus,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 import yazrServer from "@/lib/yazr.server";
 import { S3Event, S3EventRecord, SESEvent } from "aws-lambda";
 import { extract, LetterparserAttachment } from "letterparser";

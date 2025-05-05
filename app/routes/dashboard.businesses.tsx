@@ -1,4 +1,3 @@
-import db from "@/lib/db.server_dep";
 import { BusinessProfile } from "@/lib/typesCompany";
 import {
   ActionFunctionArgs,
@@ -17,6 +16,7 @@ import {
 import { auth } from "@/.server/auth/auth";
 import { Button } from "@/components/ui/button";
 import yazrServer from "@/.server/yazr.server";
+import { CreateBusinessPayload } from "@/.server/electroDb.server";
 export default function Companies() {
   const data = useLoaderData<typeof loader>();
   const navigate = useNavigate();
@@ -39,10 +39,10 @@ export default function Companies() {
         </TableHeader>
         <TableBody>
           {data &&
-            data.companies.map((company: BusinessProfile) => (
+            data.companies.map((company: CreateBusinessPayload) => (
               <TableRow
-                key={company.profileId}
-                onClick={() => handleClick(company.profileId)}
+                key={company.businessId}
+                onClick={() => handleClick(company.businessId)}
                 className="w-full hover:cursor-pointer"
               >
                 <TableCell className="font-medium  hover:underline">
@@ -71,8 +71,8 @@ export default function Companies() {
                     </Button>
                     <input
                       type="hidden"
-                      name="profileId"
-                      value={company.profileId}
+                      name="businessId"
+                      value={company.businessId}
                     />
                   </Form>
                 </TableCell>
@@ -106,8 +106,8 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const data = Object.fromEntries(formData);
   if (data.action === "delete") {
-    const { profileId } = data;
-    await db.businesses.delete(profileId as string);
+    const { businessId } = data;
+    await yazrServer.business.delete(businessId as string);
   }
   return redirect("/dashboard/businesses");
 }

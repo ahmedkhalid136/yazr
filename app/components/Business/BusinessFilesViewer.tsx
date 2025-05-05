@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { FileType } from "@/lib/types";
+import { FileType } from "@/lib/types_dep";
 import { validFileCategories } from "./FileCategoryDragAndDrop";
 import { Badge } from "../ui/badge";
 import yazrClient from "@/lib/yazr.client";

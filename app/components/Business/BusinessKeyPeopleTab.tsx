@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CrustDataItem } from "@/lib/types";
+import { CrustDataItem } from "@/lib/types_dep";
 import { Link } from "@remix-run/react";
 
 // Define the structure of the employee data

@@ -17,7 +17,7 @@ import {
   UploadFormData,
   User,
   Workspace,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 import { Resource } from "sst";
 import { BusinessProfile, CallType } from "./typesCompany";
 import {

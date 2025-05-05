@@ -16,6 +16,7 @@ const fileEntitiesTable = Resource.FileEntities.name;
 const crustdataTable = Resource.Crustdata.name;
 const crustdataFoundersTable = Resource.CrustdataFounders.name;
 const templatesTable = Resource.Templates.name;
+
 export const users = new Entity(
   {
     model: {
@@ -318,6 +319,7 @@ export const profiles = new Entity(
             approvedBy: { type: "string", required: true },
             title: { type: "string", required: true },
             category: { type: "string", required: true },
+            id: { type: "number", required: true },
           },
         },
       },
@@ -337,7 +339,8 @@ export const profiles = new Entity(
       },
       byBusinessId: {
         index: "BusinessIdIndex",
-        pk: { field: "businessId", composite: ["businessId", "createdAt"] },
+        pk: { field: "businessId", composite: ["businessId"] },
+        sk: { field: "createdAt", composite: ["createdAt"] },
       },
     },
   },

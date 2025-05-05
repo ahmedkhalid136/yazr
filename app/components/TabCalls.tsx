@@ -4,8 +4,8 @@ import { CallCard } from "./CallCard";
 import { CallDialog } from "./CallDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
-import { MiniUser } from "@/lib/types";
-import { Workspace } from "@/lib/types";
+import { MiniUser } from "@/lib/types_dep";
+import { Workspace } from "@/lib/types_dep";
 import { Input } from "./ui/input";
 
 import { CallSummaryDialog } from "./CallSummaryDialog";

@@ -13,7 +13,7 @@ import {
   MessageProcessing,
   ProcessingStatus,
   QueueJobType,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 
 import { auth } from "@/.server/auth/auth";
 import { Button } from "@/components/ui/button";

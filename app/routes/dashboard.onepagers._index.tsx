@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { JobType } from "@/lib/types";
+import { JobType } from "@/lib/types_dep";
 import DrawerDoc from "@/components/DrawerDoc";
 import { useState } from "react";
 import { auth } from "@/.server/auth/auth";

@@ -18,7 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download, File } from "lucide-react";
 import { Link } from "@remix-run/react";
-import { JobType } from "@/lib/types";
+import { JobType } from "@/lib/types_dep";
 
 export default function MetadataJob(props: JobType) {
   const getStatusColor = (status: string) => {

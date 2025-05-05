@@ -1,5 +1,5 @@
 import { Button } from "./ui/button";
-import { JobType, JobStatus } from "@/lib/types";
+import { JobType, JobStatus } from "@/lib/types_dep";
 
 export interface DocPreviewProps {
   job: JobType;

@@ -1,5 +1,5 @@
-import { FileStatus, ProcessingStatus } from "./types";
-import { FileType } from "./types";
+import { FileStatus, ProcessingStatus } from "./types_dep";
+import { FileType } from "./types_dep";
 import { nanoid } from "nanoid";
 import { folders } from "./utils";
 import { sha1 } from "hash-wasm";

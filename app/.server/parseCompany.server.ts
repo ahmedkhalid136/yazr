@@ -1,6 +1,6 @@
 import db from "@/lib/db.server_dep";
 import { rawToCompanyProfile } from "./processing/newFile/rawToCompanyProfile.server";
-import { JobStatus } from "@/lib/types";
+import { JobStatus } from "@/lib/types_dep";
 // import { randomId } from "@/lib/utils";
 import s3 from "@/.server/s3.server";
 import { BusinessProfile } from "@/lib/typesCompany";

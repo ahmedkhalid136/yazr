@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { User } from "@/lib/types";
+import { User } from "@/lib/types_dep";
 import { Link } from "@remix-run/react";
 
 export default function AvatarDrop({ user }: { user: User }) {

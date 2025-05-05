@@ -37,7 +37,7 @@ import s3 from "@/.server/s3.server";
 import db from "@/lib/db.server_dep";
 import { auth } from "@/.server/auth/auth";
 import { useRef } from "react";
-import { User } from "@/lib/types";
+import { User } from "@/lib/types_dep";
 
 export default function Dashboard() {
   return (

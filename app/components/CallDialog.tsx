@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { cn } from "@/lib/utils";
-import { MiniUser, Workspace } from "@/lib/types";
+import { MiniUser, Workspace } from "@/lib/types_dep";
 import { BusinessProfile, CallType } from "@/lib/typesCompany";
 
 import { format } from "date-fns";

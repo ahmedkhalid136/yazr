@@ -4,7 +4,7 @@ import {
   MessageProcessing,
   ProcessingStatus,
   QueueJobType,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 import { SQSEvent } from "aws-lambda";
 // import { emailAnalysis } from "../processing/newFile/emailAnalysisHandler";
 import { a_dataIntegrity } from "../processing/newFile/a_dataIntegrity";

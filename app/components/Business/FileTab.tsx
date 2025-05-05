@@ -1,4 +1,4 @@
-import { FileType } from "@/lib/types";
+import { FileType } from "@/lib/types_dep";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { BusinessFilesUploader } from "./BusinessFilesUploader";
 import { BusinessFilesViewer } from "./BusinessFilesViewer";

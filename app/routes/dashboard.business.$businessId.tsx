@@ -12,20 +12,7 @@ import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 
 import { auth } from "@/.server/auth/auth";
 
-import { BusinessData, BusinessProfile, CallType } from "../lib/typesCompany";
-import {
-  MiniUserSchema,
-  MiniUser,
-  User,
-  Workspace,
-  FileType,
-  CrustDataItem,
-} from "../lib/types";
-
-import { BusinessOnePager } from "@/components/Business/BusinessOnePagerTab";
-import { BusinessKeyPeople } from "@/components/Business/BusinessKeyPeopleTab";
-import UploadDocumentsAlert from "@/components/UploadDocumentsAlert";
-// import { FileTab } from "@/components/Business/FileTab";
+import { BusinessProfile } from "../lib/typesCompany";
 import {
   Accordion,
   AccordionTrigger,
@@ -33,30 +20,16 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 
-import { CrustCompanyType } from "../lib/typesCrust";
 import { TextEdit } from "@/components/ui/textEdit";
-
+import { CreateBusinessPayload } from "@/.server/electroDb.server";
 export default function CompanyPage() {
   const {
     company,
-    workspace,
-    calls,
-    files,
-    miniUsers,
-    workspaceId,
-    userId,
+
     dev,
-    crustdata,
   } = useLoaderData<{
-    company: BusinessProfile;
-    workspace: Workspace;
-    calls: CallType[];
-    files: FileType[];
-    miniUsers: MiniUser[];
-    workspaceId: string;
-    userId: string;
+    company: CreateBusinessPayload;
     dev: boolean;
-    crustdata: CrustCompanyType | null;
   }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -112,7 +85,7 @@ export default function CompanyPage() {
         className="w-full"
         onValueChange={(v) => {
           console.log(v);
-          navigate(`/dashboard/business/${company.profileId}/${v}`);
+          navigate(`/dashboard/business/${company.businessId}/${v}`);
         }}
       >
         {/* Navigation Tabs */}
@@ -264,7 +237,7 @@ export default function CompanyPage() {
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const yazrServer = (await import("@/.server/yazr.server")).default;
-  const crustdata = (await import("@/.server/crustdata.server")).default;
+
   try {
     const authObj = await auth(request);
     if (!authObj) {
@@ -280,43 +253,26 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     const workspaceId = authObj.workspaceId;
     const userId = authObj.userId;
-    const profileId = params.profileId;
-    if (!profileId || !workspaceId) {
+    const businessId = params.businessId;
+    if (!businessId || !workspaceId) {
       return redirect("/dashboard");
     }
 
     const workspace = await yazrServer.workspace.get(workspaceId);
-    const company = await yazrServer.business.get(profileId);
+    const company = await yazrServer.business.get(businessId);
 
     if (!company) {
       return redirect("/dashboard");
     }
-    const calls = await yazrServer.call.getFromBusinessId(profileId);
-    const files = await yazrServer.file.queryFromBusinessId(profileId);
-    const crust = await crustdata.byDomainSafe(company?.domain);
+
     // Get miniUsers (names of other users from the same workspace)
-    const rawUsers = await yazrServer.user.getAll(workspaceId || "");
-    const miniUserKeys = Object.keys(
-      MiniUserSchema.shape,
-    ) as (keyof MiniUser)[];
-    const miniUsers = rawUsers.map(
-      (user: User) =>
-        Object.fromEntries(
-          miniUserKeys.map((key) => [key, user[key]]),
-        ) as MiniUser,
-    );
 
     return Response.json({
       company: company,
       workspace,
-      profileId,
-      calls,
-      files,
       workspaceId,
       userId,
-      miniUsers,
       dev,
-      crustdata: crust,
     });
   } catch (error) {
     console.error("Error in loader:", error);
@@ -327,8 +283,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 export async function action({ request }: ActionFunctionArgs) {
   console.log("action");
   const formData = await request.formData();
-  const jobId = formData.get("jobId");
-  const action = formData.get("action");
   const formObject = Object.fromEntries(formData.entries());
   console.log(formObject);
   // return redirect(`/dashboard/business/${jobId}`);

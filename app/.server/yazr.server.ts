@@ -11,7 +11,7 @@ import {
   QueueJobType,
   User,
   Workspace,
-} from "@/lib/types";
+} from "@/lib/types_dep";
 import crypto from "crypto";
 import s3 from "../.server/s3.server";
 import { BusinessProfile, CallType } from "@/lib/typesCompany";
@@ -22,16 +22,7 @@ import {
 } from "@/lib/typesCrust";
 import { Resource } from "sst";
 import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import db, {
-  users,
-  workspaces,
-  businesses,
-  jobs,
-  calls,
-  fileEntities,
-  emails,
-  templates,
-} from "../.server/electroDb.server";
+import db, { jobs } from "../.server/electroDb.server";
 import { CreateEntityItem } from "electrodb";
 const sqs = new SQSClient({});
 
@@ -231,13 +222,15 @@ const yazrServerBase = {
   },
 };
 
-type CreateBusinessPayload = CreateEntityItem<typeof businesses>;
-type CreateUserPayload = CreateEntityItem<typeof users>;
-type CreateWorkspacePayload = CreateEntityItem<typeof workspaces>;
-type CreateJobPayload = CreateEntityItem<typeof jobs>;
-type CreateCallPayload = CreateEntityItem<typeof calls>;
-type CreateFileEntityPayload = CreateEntityItem<typeof fileEntities>;
-type TemplatePayload = CreateEntityItem<typeof templates>;
+type CreateBusinessPayload = CreateEntityItem<typeof db.businesses>;
+type CreateUserPayload = CreateEntityItem<typeof db.users>;
+type CreateWorkspacePayload = CreateEntityItem<typeof db.workspaces>;
+type CreateJobPayload = CreateEntityItem<typeof db.jobs>;
+type CreateCallPayload = CreateEntityItem<typeof db.calls>;
+type CreateFileEntityPayload = CreateEntityItem<typeof db.fileEntities>;
+type TemplatePayload = CreateEntityItem<typeof db.templates>;
+type CreateProfilePayload = CreateEntityItem<typeof db.profiles>;
+
 const yazrServer = {
   ...yazrServerBase,
   job: {
@@ -290,23 +283,23 @@ const yazrServer = {
         emailId: emailId,
       };
 
-      await jobs.put(newJob).go();
+      await db.jobs.put(newJob).go();
       return newJob;
     },
     get: async (workspaceId: string, createdAt: string) => {
-      const result = await jobs.get({ workspaceId, createdAt }).go();
+      const result = await db.jobs.get({ workspaceId, createdAt }).go();
       return result.data;
     },
     update: async (jobData: any) => {
       const { workspaceId, createdAt, ...updateData } = jobData;
-      const result = await jobs
+      const result = await db.jobs
         .update({ workspaceId, createdAt })
         .set(updateData)
         .go();
       return result.data;
     },
     sendToQueue: async (createdAt: string, workspaceId: string) => {
-      const jobResult = await jobs.get({ workspaceId, createdAt }).go();
+      const jobResult = await db.jobs.get({ workspaceId, createdAt }).go();
       if (!jobResult.data) {
         throw new Error("Job not found");
       }
@@ -320,97 +313,6 @@ const yazrServer = {
     },
   },
   business: {
-    createDraft: async ({
-      domain,
-      description,
-      workspaceId,
-      userId,
-      email,
-      companyName,
-      linkedin,
-      primarySector,
-      subSector,
-      city,
-      country,
-      crustData,
-      foundersData,
-    }: {
-      domain: string;
-      description: string;
-      workspaceId: string;
-      userId: string;
-      email: string;
-      companyName: string;
-      linkedin?: string;
-      primarySector?: string;
-      subSector?: string;
-      city?: string;
-      country?: string;
-      crustData?: CrustCompanyType;
-      foundersData?: CrustCompanyFounders;
-    }) => {
-      const profileId = uuidv4();
-      const businessUrlSlug = domain.replace(/\./g, "-");
-
-      let businessData: Business;
-
-      if (crustData) {
-        const mappedProfile = yazrServerBase.mapCrustDataToBusinessProfile(
-          crustData,
-          description,
-          { email, userId },
-          foundersData,
-        );
-        businessData = {
-          ...mappedProfile,
-          constIndex: "constIndex",
-        };
-      } else {
-        businessData = {
-          constIndex: "constIndex",
-          profileId,
-          businessUrlSlug,
-          domain: domain,
-          hasPrivateProfile: false,
-          hasWebProfile: true,
-          workspaceId: workspaceId,
-          creator: {
-            email: email,
-            userId,
-          },
-          companyProfile: {
-            basicInfo: {
-              overview: description,
-              companyName,
-              urls: {
-                website: domain,
-                linkedin: linkedin || "",
-              },
-              industry: {
-                primarySector: primarySector || "",
-                subSector: subSector || "",
-                source: {
-                  name: "manual",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-              headquarters: {
-                city: city || "",
-                country: country || "",
-                source: {
-                  name: "manual",
-                  details: `created via web at ${new Date().toLocaleString()} by ${email}`,
-                },
-              },
-            },
-            updatedAt: new Date().toISOString(),
-          },
-        };
-      }
-
-      await businesses.put(businessData).go();
-      return profileId;
-    },
     create: async ({
       name,
       domain,
@@ -421,7 +323,7 @@ const yazrServer = {
     }: {
       name: string;
       domain: string;
-      description: string;
+      description?: string;
       workspaceId: string;
       userId: string;
       email: string;
@@ -451,41 +353,47 @@ const yazrServer = {
         throw new Error("Template not found");
       }
       const fields = template.fields.map((field) => {
-        if (field.category === "Product" && field.title === "description") {
-          field.value = description;
+        if (field.category === "overview" && field.title === "description") {
+          field.value = description || "";
           return field;
         }
         return field;
       });
-      const profileId = uuidv4();
-      const newProfile: BusinessProfile = {
+      await yazrServer.profile.create({
+        workspaceId,
+        businessId,
+        email,
+        userId,
         fields,
-        profileId,
-        businessUrlSlug,
-        domain,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        hasPrivateProfile: false,
-        hasWebProfile: false,
-        creator: {
-          email: email,
-          userId,
-        },
-      };
-      await db.profiles.put(newProfile).go();
-      return profileId;
+      });
+      return businessId;
     },
-    get: async (profileId: string): Promise<BusinessProfile | null> => {
-      const result = await businesses.get({ profileId }).go();
-      return result.data as BusinessProfile | null;
+    get: async (businessId: string): Promise<CreateBusinessPayload | null> => {
+      const result = await db.businesses.get({ businessId }).go();
+      return result.data as CreateBusinessPayload | null;
     },
-    getAll: async (workspaceId: string): Promise<BusinessProfile[]> => {
+    getAll: async (workspaceId: string): Promise<CreateBusinessPayload[]> => {
       if (!workspaceId) {
         console.warn("getAllBusinesses called with empty workspaceId");
         return [];
       }
-      const result = await businesses.query.byWorkspace({ workspaceId }).go();
-      return result.data as BusinessProfile[];
+      const result = await db.businesses.query
+        .byWorkspace({ workspaceId })
+        .go();
+      return result.data as CreateBusinessPayload[];
+    },
+    delete: async (businessId: string) => {
+      await db.businesses.delete({ businessId }).go();
+      const profiles = await db.profiles.query
+        .byBusinessId({ businessId })
+        .go();
+      for (const profile of profiles.data) {
+        await db.profiles.delete({ profileId: profile.profileId }).go();
+      }
+      const calls = await db.calls.query.byBusiness({ businessId }).go();
+      for (const call of calls.data) {
+        await db.calls.delete({ callId: call.callId }).go();
+      }
     },
   },
   user: {
@@ -511,16 +419,16 @@ const yazrServer = {
         PK: `USER#${email}`,
         constIndex: "constIndex",
       };
-      await users.put(userPayload).go();
-      const createdUser = await users.get({ PK: userPayload.PK }).go();
+      await db.users.put(userPayload).go();
+      const createdUser = await db.users.get({ PK: userPayload.PK }).go();
       return createdUser.data as User;
     },
     getByEmail: async ({ email }: { email: string }): Promise<User | null> => {
-      const result = await users.query.byEmail({ email }).go();
+      const result = await db.users.query.byEmail({ email }).go();
       return result.data[0] as User | null;
     },
     getAll: async (workspaceId: string): Promise<User[]> => {
-      const result = await users.query.byWorkspace({ workspaceId }).go();
+      const result = await db.users.query.byWorkspace({ workspaceId }).go();
       return result.data as User[];
     },
   },
@@ -540,12 +448,12 @@ const yazrServer = {
         updatedAt: now,
         constIndex: "constIndex",
       };
-      await workspaces.put(workspacePayload).go();
-      const createdWs = await workspaces.get({ PK }).go();
+      await db.workspaces.put(workspacePayload).go();
+      const createdWs = await db.workspaces.get({ PK }).go();
       return createdWs.data as Workspace;
     },
     get: async (PK: string): Promise<Workspace | null> => {
-      const result = await workspaces.get({ PK }).go();
+      const result = await db.workspaces.get({ PK }).go();
       return result.data as Workspace | null;
     },
   },
@@ -568,8 +476,8 @@ const yazrServer = {
           : callData.challenges,
       };
 
-      await calls.put(payload).go();
-      const createdCallResult = await calls.get({ callId }).go();
+      await db.calls.put(payload).go();
+      const createdCallResult = await db.calls.get({ callId }).go();
       const createdCallData = createdCallResult.data;
       if (createdCallData) {
         return createdCallData as CallType;
@@ -577,11 +485,11 @@ const yazrServer = {
       throw new Error("Failed to create or retrieve call");
     },
     get: async (callId: string): Promise<CallType | null> => {
-      const result = await calls.get({ callId }).go();
+      const result = await db.calls.get({ callId }).go();
       return result.data as CallType | null;
     },
     getFromBusinessId: async (businessId: string): Promise<CallType[]> => {
-      const result = await calls.query.byBusiness({ businessId }).go();
+      const result = await db.calls.query.byBusiness({ businessId }).go();
       return result.data as CallType[];
     },
   },
@@ -603,32 +511,34 @@ const yazrServer = {
       ) {
         throw new Error("Missing required fields for file entity creation");
       }
-      await fileEntities.put(payload).go();
-      const createdFile = await fileEntities.get({ fileId }).go();
+      await db.fileEntities.put(payload).go();
+      const createdFile = await db.fileEntities.get({ fileId }).go();
       return createdFile.data as FileType;
     },
     get: async (fileId: string): Promise<FileType | null> => {
-      const result = await fileEntities.get({ fileId }).go();
+      const result = await db.fileEntities.get({ fileId }).go();
       return result.data as FileType | null;
     },
     queryFromBusinessId: async (businessId: string): Promise<FileType[]> => {
-      const result = await fileEntities.query.byBusiness({ businessId }).go();
+      const result = await db.fileEntities.query
+        .byBusiness({ businessId })
+        .go();
       return result.data as FileType[];
     },
   },
   template: {
     defaultFields: [
       {
+        category: "overview",
+        title: "description",
         type: "text",
         required: true,
-        category: "product",
-        value: "",
         prompt: "Please provide a description of the product",
         proposeChange: "",
         editedAt: new Date().toISOString(),
         source: "template",
         approvedBy: "admin",
-        title: "Description",
+        value: "",
       },
       {
         type: "text",
@@ -641,7 +551,7 @@ const yazrServer = {
         editedAt: new Date().toISOString(),
         source: "template",
         approvedBy: "admin",
-        title: "Competitive Advantage",
+        title: "competitive advantage",
       },
       {
         type: "text",
@@ -654,7 +564,7 @@ const yazrServer = {
         editedAt: new Date().toISOString(),
         source: "template",
         approvedBy: "admin",
-        title: "Target Market",
+        title: "target market",
       },
       {
         type: "text",
@@ -667,7 +577,7 @@ const yazrServer = {
         editedAt: new Date().toISOString(),
         source: "template",
         approvedBy: "admin",
-        title: "Pricing Model",
+        title: "pricing model",
       },
     ],
     get: async ({
@@ -675,8 +585,9 @@ const yazrServer = {
     }: {
       workspaceId: string;
     }): Promise<TemplatePayload> => {
-      const templates = (await db.templates.query.primary({ workspaceId }).go())
-        .data[0];
+      const templates = (
+        await db.templates.query.primary({ workspaceId }).go({ order: "desc" })
+      ).data[0];
       if (!templates) {
         const newTemplate: TemplatePayload = {
           templateId: uuidv4(),
@@ -692,18 +603,50 @@ const yazrServer = {
       }
       return templates;
     },
+    update: async (templateData: TemplatePayload) => {
+      await db.templates
+        .update({
+          workspaceId: templateData.workspaceId,
+        })
+        .set(templateData)
+        .go();
+    },
   },
   profile: {
-    create: async (
-      profileData: Omit<
-        BusinessProfile,
-        "profileId" | "createdAt" | "updatedAt"
-      >,
-    ): Promise<BusinessProfile> => {
+    create: async ({
+      workspaceId,
+      businessId,
+      email,
+      userId,
+      fields,
+    }: {
+      workspaceId: string;
+      businessId: string;
+      email: string;
+      userId: string;
+      fields: any[];
+    }): Promise<CreateProfilePayload> => {
       const profileId = uuidv4();
-      const payload = { ...profileData, profileId };
-      await db.profiles.put(payload).go();
-      return payload;
+
+      const profile: CreateProfilePayload = {
+        profileId,
+
+        constIndex: "constIndex",
+        workspaceId,
+        businessId,
+        creator: {
+          email,
+          userId,
+        },
+        fields,
+      };
+
+      await db.profiles.put(profile).go();
+      return profile;
+    },
+    get: async (businessId: string): Promise<CreateProfilePayload> => {
+      const result = await db.profiles.query.byBusinessId({ businessId }).go();
+      return result.data[0] as CreateProfilePayload;
     },
   },
 };

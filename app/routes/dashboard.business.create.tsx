@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BusinessFilesUploader } from "@/components/Business/BusinessFilesUploader";
 import { useState } from "react";
 
-import { FileType } from "../lib/types";
+import { FileType } from "../lib/types_dep";
 import { BusinessFilesViewer } from "@/components/Business/BusinessFilesViewer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

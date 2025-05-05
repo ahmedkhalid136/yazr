@@ -1,7 +1,7 @@
 import { Form } from "@remix-run/react";
 import { Button } from "./ui/button";
 import { Trash2Icon } from "lucide-react";
-import { JobType, JobStatus } from "@/lib/types";
+import { JobType, JobStatus } from "@/lib/types_dep";
 
 export interface DocPreviewProps {
   job: JobType;
@@ -49,10 +49,10 @@ export default function DocPreview({
                   status === JobStatus.COMPLETED
                     ? "bg-green-100 text-green-800"
                     : status === JobStatus.FAILED
-                    ? "bg-red-100 text-red-800"
-                    : status === JobStatus.PROCESSING
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-yellow-100 text-yellow-800"
+                      ? "bg-red-100 text-red-800"
+                      : status === JobStatus.PROCESSING
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-yellow-100 text-yellow-800"
                 }`}
               >
                 {status}
