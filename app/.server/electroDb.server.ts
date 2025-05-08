@@ -372,8 +372,6 @@ export const businesses = new Entity(
       domain: { type: "string", required: true },
       name: { type: "string", required: true },
       businessUrlSlug: { type: "string", required: false },
-      hasPrivateProfile: { type: "boolean", required: false },
-      hasWebProfile: { type: "boolean", required: false },
       creator: {
         type: "map",
         required: true,

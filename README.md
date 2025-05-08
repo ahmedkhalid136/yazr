@@ -116,7 +116,7 @@ _(Refer to `package.json` for specific versions and a complete list)_
    1. The user can click on a button in the financial tab to populate the financial by uploading documents (decks or xllsx).
    1. The user can click on a button in the investment tab to populate the investment via Gemini or by uploading documents.
    1. The user can click on a button in the investment tab to populate the investment via Crunchbase api (crustadata) or by uploading documents.
-   1. The user can modify any of the fields in the overview tab and add fields within the sections.
+   1. The user can modify any of the fields in the overview tab and add fields within the sections. Check the compnent textEdit and textEditArea in /components/ui
    1. The user when adds a field, needs to also add the prompt for the AI to understand the kpi and retrieve the correct,data. The prompt can be saved in the workspace tempalte or only stay in the company profile. The autopopulation also can access data from web, crustadata or files, the user can choose.
 1. The team tab contains an overview of the team as per the live version. A chronjob monthly updates the data via Crustdata.
 1. Financial tab contains a table with 15 main KPIs that can be updated manually or by uploding financial data.
