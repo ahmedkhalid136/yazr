@@ -162,11 +162,15 @@ _(Refer to `package.json` for specific versions and a complete list)_
 - The content of each key is a map with the following format:
   ```
   {
-        prompt: { type: "string" },
-        data: { type: "string" },
-        source: { type: "string" },
-        createdAt: { type: "string" },
-        approvedBy: { type: "string" },
+            value: { type: "string", required: true },
+            prompt: { type: "string", required: true },
+            proposeChange: { type: "string", required: true },
+            editedAt: { type: "string", required: true },
+            source: { type: "string", required: true },
+            approvedBy: { type: "string", required: true },
+            title: { type: "string", required: true },
+            category: { type: "string", required: true },
+            id: { type: "number", required: true },
   }
   ```
 
