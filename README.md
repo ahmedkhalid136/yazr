@@ -128,57 +128,69 @@ _(Refer to `package.json` for specific versions and a complete list)_
 
 ## Tasks
 
-1. Workspace template
+1. **Workspace template**
+
    Each workspace comes with a company profile template per industry. At the moment we only have one industry - InsurTech.
    A new section accsssible via the main sidebar should allow the user to see the template, and should allow the user to modify it.
    The template represent all the initial fields we expect every company to have.
    Template comes with the following format:
+
+   ```
    templateId: { type: "string" },
    templateIndustry: { type: "string" },
    template:{
-   profileId: { type: "string" },
-   createdAt: {type: "string",},
-   updatedAt: {type: "string",},
-   workspaceId: { type: "string" },
-   businessId: { type: "string", required: false },
-   domain: { type: "string" },
-   businessUrlSlug: { type: "string", required: false },
-   creator: {
-   email: { type: "string" },
-   userId: { type: "string" },
-   },
-   product*: { description, businessModel, productFeatures, productPricing, productDistribution, productMarket, productCompetitors },
-   team*: {
-   name, linkedinUrl, imgUrl, title, description
-   }[],
-   financial*: { 15 KPis },
-   investment*: { investor, amount, date, stage }[],
-   },
+        profileId: { type: "string" },
+        createdAt: {type: "string",},
+        updatedAt: {type: "string",},
+        workspaceId: { type: "string" },
+        businessId: { type: "string", required: false },
+        domain: { type: "string" },
+        businessUrlSlug: { type: "string", required: false },
+        creator: {
+        email: { type: "string" },
+        userId: { type: "string" },
+        },
+        product*: { description, businessModel, productFeatures, productPricing, productDistribution, productMarket, productCompetitors },
+        team*: {
+        name, linkedinUrl, imgUrl, title, description
+        }[],
+        financial*: { 15 KPis },
+        investment*: { investor, amount, date, stage }[],
+   }
+   ```
 
 - The content of each key is a map with the following format:
+  ```
   {
-  prompt: { type: "string" },
-  data: { type: "string" },
-  source: { type: "string" },
-  createdAt: { type: "string" },
-  approvedBy: { type: "string" },
+        prompt: { type: "string" },
+        data: { type: "string" },
+        source: { type: "string" },
+        createdAt: { type: "string" },
+        approvedBy: { type: "string" },
   }
+  ```
 
-2.  Overview page
+2.  **Overview page**
+
     The overview page will look similar to the live version. However, we will use the new input box component, and we allow the user to add new fields. The new component allows the modification of the prompt and the data. It does not yet provide a way to confirm suggested modification made by AI. Every change to the profile should be saved in a new copy of the profile, so that we can easily revert back to previous changes. A panel on the right similarly to the history tab in google docs, should allow just that.
     In each section of the overview, as described in the User Flow, we should be able to manually trigger the AI to populate the section.
 
-3.  Data ingestion.
-    Each document gets saved as araw version, and a new document profile is created in the document table. The profile contains all the relevant fields and keeps track of the state of the anlysis. If the FE finds a document in process, can start a polling mechanism to check the status of the document. Each document gets categories. The output of the ingestion is a markdown file that will be used to populate the company profile section. 1. Overview page 2
-    We need to make the data ingestion work so that we can populate the different section using documents. The data ingestion as per the python code in the task repo.
+3.  **Data ingestion.**
 
-        1. Financial page
-        We need to make the data ingestion work so that we can populate the different section using documents. The data ingestion as per the python code in the task repo.
+    Each document gets saved as araw version, and a new document profile is created in the document table. The profile contains all the relevant fields and keeps track of the state of the anlysis. If the FE finds a document in process, can start a polling mechanism to check the status of the document. Each document gets categories. The output of the ingestion is a markdown file that will be used to populate the company profile section.
 
-4.  Chat benchmark.
+    1. **Overview page:**
+       We need to make the data ingestion work so that we can populate the different section using documents. The data ingestion as per the python code in the task repo.
+
+    1. **Financial page:**
+       We need to make the data ingestion work so that we can populate the different section using documents. The data ingestion as per the python code in the task repo.
+
+4.  **Chat benchmark.**
+
     A chat functionality should allow the user to select the sources of data they want to use. The user can then prompt the LLM which will go fetch the data, analyse the data, make calculation, and provide a response. Ideally most of the questions are anwered after the LLM with a succesfull SQL query is returned with the data. In other cases the LLM may acess the web or the vector database where we store all the markdowns (these markdowns are optimised for LLM retrieval - ex. to avoid confusion between sentences about revenues that belong to different companies, each sentence always contains the company name).
 
-5.  Benchmarking.
+5.  **Benchmarking.**
+
     The benchmarking page should allow the user to select the companies they want to compare the selected company to. The user can then select the KPI they want to compare. The dashboard should then display a table with the selected companies and the selected KPI.
 
 ## Common issues

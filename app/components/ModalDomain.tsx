@@ -117,7 +117,7 @@ export default function ModalDomain({
       return;
     }
     setLoadingConfirm(false);
-    navigate("/dashboard/business/" + businessId + "/overview"w);
+    navigate("/dashboard/business/" + businessId + "/overview");
   };
 
   return (
